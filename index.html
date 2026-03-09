@@ -3,293 +3,253 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>我的导览博客页</title>
+  <title>主页导航</title>
   <style>
     :root {
-      --bg1: #0f1021;
-      --bg2: #1e214b;
-      --card: rgba(255, 255, 255, 0.12);
-      --card-border: rgba(255, 255, 255, 0.2);
-      --text: #f3f5ff;
-      --muted: #b9c0ff;
-      --primary: #7e8dff;
-      --primary-strong: #5f73ff;
-      --good-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      --bg-1: #eafcff;
+      --bg-2: #d9f6ff;
+      --bg-3: #e7ffe9;
+      --card: rgba(255, 255, 255, 0.82);
+      --card-border: rgba(88, 180, 156, 0.28);
+      --text: #17465f;
+      --muted: #587d8f;
+      --blue: #269fdf;
+      --green: #39b980;
+      --blue-dark: #2f6dff;
+      --shadow: 0 20px 45px rgba(37, 143, 177, 0.16);
+      --radius: 22px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       min-height: 100vh;
       font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
       color: var(--text);
-      background: radial-gradient(circle at 20% 20%, #323579 0, transparent 35%),
-        radial-gradient(circle at 85% 15%, #2b7ea3 0, transparent 30%),
-        linear-gradient(135deg, var(--bg1), var(--bg2));
-      padding: 28px;
+      background:
+        radial-gradient(circle at 10% 8%, rgba(119, 238, 194, 0.3), transparent 36%),
+        radial-gradient(circle at 85% 10%, rgba(86, 164, 255, 0.28), transparent 38%),
+        linear-gradient(145deg, var(--bg-1), var(--bg-2) 60%, var(--bg-3));
+      padding: 28px 16px;
     }
 
-    .wrap {
-      max-width: 1100px;
+    .container {
+      width: min(980px, 100%);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 20px;
+      gap: 16px;
     }
 
-    .panel {
-      backdrop-filter: blur(14px);
+    .card {
       background: var(--card);
       border: 1px solid var(--card-border);
-      border-radius: 18px;
-      box-shadow: var(--good-shadow);
-      padding: 22px;
+      border-radius: var(--radius);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      padding: 24px;
     }
 
-    .hero h1 {
+    .hero {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(85, 209, 137, 0.2), rgba(85, 209, 137, 0));
+      right: -90px;
+      top: -110px;
+      pointer-events: none;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 13px;
+      color: #117f56;
+      background: rgba(80, 201, 141, 0.18);
+      border: 1px solid rgba(73, 183, 126, 0.35);
+      border-radius: 999px;
+      padding: 6px 12px;
+    }
+
+    h1 {
+      margin: 12px 0 8px;
+      font-size: clamp(30px, 4vw, 42px);
+      letter-spacing: .3px;
+    }
+
+    .subtitle {
       margin: 0;
-      font-size: 32px;
-      line-height: 1.2;
-      letter-spacing: 0.5px;
-    }
-
-    .hero p {
       color: var(--muted);
-      margin: 10px 0 20px;
+      line-height: 1.7;
       font-size: 15px;
     }
 
-    .search-row {
+    .search {
+      margin-top: 16px;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    .search-row input {
+    .search input {
       flex: 1;
-      min-width: 180px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 12px 14px;
-      color: #fff;
+      min-width: 230px;
+      border: 1px solid rgba(49, 155, 178, 0.3);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--text);
+      padding: 13px 14px;
       font-size: 15px;
       outline: none;
     }
 
-    .search-row input::placeholder {
-      color: #d5d9ff;
-    }
-
-    .search-row button {
+    .search button {
       border: none;
-      border-radius: 12px;
-      padding: 12px 18px;
+      border-radius: 14px;
+      padding: 12px 20px;
       font-size: 15px;
-      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
       color: #fff;
       cursor: pointer;
-      transition: transform 0.15s ease;
+      background: linear-gradient(115deg, var(--green), var(--blue-dark));
+      box-shadow: 0 10px 24px rgba(53, 137, 188, 0.32);
     }
 
-    .search-row button:hover {
-      transform: translateY(-1px);
+    .clock {
+      margin-top: 10px;
+      color: #1a8f67;
+      font-size: 14px;
+      font-weight: 600;
     }
 
-    .section-title {
-      margin: 0 0 14px;
-      font-size: 20px;
-      color: #f6f7ff;
-    }
+    h2 { margin: 0 0 14px; font-size: 21px; }
 
-    .link-grid {
+    .links {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 12px;
     }
 
-    .site-card {
+    .site {
       text-decoration: none;
       color: inherit;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      background: rgba(255, 255, 255, 0.08);
-      padding: 12px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      transition: all 0.18s ease;
+      gap: 12px;
+      padding: 13px;
+      border-radius: 14px;
+      border: 1px solid rgba(64, 165, 161, 0.24);
+      background: rgba(255, 255, 255, 0.78);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
     }
 
-    .site-card:hover {
+    .site:hover {
       transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.35);
-      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(49, 152, 150, 0.5);
+      box-shadow: 0 10px 18px rgba(70, 160, 168, 0.2);
     }
 
     .icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 11px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
       display: grid;
       place-items: center;
-      font-size: 17px;
-      font-weight: 700;
-      color: #fff;
       flex-shrink: 0;
+      background: #fff;
+      border: 1px solid rgba(79, 161, 189, 0.2);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
     }
 
-    .luogu { background: linear-gradient(135deg, #1a93ff, #0b5fcb); }
-    .bbcoj { background: linear-gradient(135deg, #6d4dff, #3d2cb5); }
-    .chatgpt { background: linear-gradient(135deg, #10a37f, #066f56); }
-    .deepseek { background: linear-gradient(135deg, #2a74ff, #1742a3); }
-    .doubao { background: linear-gradient(135deg, #ff8a00, #d85f0a); }
+    .icon svg { width: 24px; height: 24px; display: block; }
 
-    .site-meta b {
-      display: block;
-      font-size: 15px;
-      margin-bottom: 3px;
-    }
+    .luogu svg { fill: #2c8fff; }
+    .bbcoj svg { fill: #5865f2; }
+    .chatgpt svg { fill: #10a37f; }
+    .deepseek svg { fill: #2f70f7; }
+    .doubao svg { fill: #f28a2a; }
 
-    .site-meta span {
-      font-size: 12px;
-      color: #ccd3ff;
-      word-break: break-all;
-    }
+    .site strong { font-size: 16px; }
+    .site small { color: var(--muted); display: block; margin-top: 2px; }
 
-    .notes {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .notes textarea {
-      flex: 1;
-      min-height: 280px;
-      resize: vertical;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      background: rgba(6, 9, 39, 0.42);
-      color: #f2f4ff;
-      padding: 12px;
-      font-size: 14px;
-      line-height: 1.6;
-      outline: none;
-    }
-
-    .notes .actions {
-      margin-top: 12px;
-      display: flex;
-      gap: 10px;
-    }
-
-    .notes button {
-      border: none;
-      border-radius: 10px;
-      padding: 9px 14px;
-      cursor: pointer;
-      color: #fff;
-      background: #5f73ff;
-    }
-
-    .notes button.secondary {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .tips {
-      margin-top: 10px;
-      color: #c6ccff;
-      font-size: 12px;
-    }
-
-    @media (max-width: 920px) {
-      .wrap {
-        grid-template-columns: 1fr;
-      }
+    .footer {
+      text-align: center;
+      color: #4a7f7a;
+      font-size: 13px;
+      padding: 2px 0;
     }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <section class="panel hero">
-      <h1>✨ 我的个人导览博客页</h1>
-      <p>集成了常用网站快捷入口、CNBing 搜索和本地记事本，打开页面即可高效开始一天。</p>
+  <main class="container">
+    <section class="card hero">
+      <span class="tag">简洁 · 青蓝绿风格</span>
+      <h1>首页导航</h1>
+      <p class="subtitle">常用网站和搜索放在一个页面，打开即用，简单清楚。</p>
 
-      <form class="search-row" action="https://cn.bing.com/search" method="get" target="_blank">
-The search form submits with `target="_blank"` but no `rel="noopener"`, so the newly opened tab keeps a live `window.opener` reference to this page. In practice, if a user opens search results and then lands on an untrusted site in that same tab, that site can redirect or manipulate the original page (tabnabbing). Please add `rel="noopener noreferrer"` (or avoid `_blank`) on the form to prevent opener access.
-        <input type="text" name="q" placeholder="在 CNBing 中搜索你想了解的内容..." />
-        <button type="submit">🔍 搜索</button>
+      <form class="search" action="https://cn.bing.com/search" method="get" target="_blank" rel="noopener noreferrer">
+        <input name="q" type="text" placeholder="输入关键词，在 CNBing 搜索" required />
+        <button type="submit">搜索</button>
       </form>
+      <div id="clock" class="clock">正在加载时间...</div>
+    </section>
 
-      <h2 class="section-title" style="margin-top:22px;">常用网站</h2>
-      <div class="link-grid">
-        <a class="site-card" href="https://www.luogu.com.cn" target="_blank" rel="noopener noreferrer">
-          <div class="icon luogu">洛</div>
-          <div class="site-meta"><b>洛谷</b><span>www.luogu.com.cn</span></div>
+    <section class="card">
+      <h2>常用网站</h2>
+      <div class="links">
+        <a class="site" href="https://www.luogu.com.cn" target="_blank" rel="noopener noreferrer">
+          <span class="icon luogu" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2l8 4.5v11L12 22 4 17.5v-11L12 2zm0 2.2L6 7.1v9.8l6 3.1 6-3.1V7.1l-6-2.9z"/></svg>
+          </span>
+          <span><strong>洛谷</strong><small>www.luogu.com.cn</small></span>
         </a>
 
-        <a class="site-card" href="https://bbcoj.cn" target="_blank" rel="noopener noreferrer">
-          <div class="icon bbcoj">B</div>
-          <div class="site-meta"><b>BBCOJ</b><span>bbcoj.cn</span></div>
+        <a class="site" href="https://bbcoj.cn" target="_blank" rel="noopener noreferrer">
+          <span class="icon bbcoj" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 4h8c3 0 5 1.8 5 4.3 0 1.6-.9 2.8-2.2 3.5 1.8.5 3.2 2 3.2 4.2C19 19 16.7 21 13.2 21H5V4zm3 3v3h4.4c1.4 0 2.3-.6 2.3-1.6 0-1.1-.9-1.4-2.2-1.4H8zm0 6v4h5c1.6 0 2.7-.6 2.7-1.9 0-1.2-1-2.1-2.8-2.1H8z"/></svg>
+          </span>
+          <span><strong>BBCOJ</strong><small>bbcoj.cn</small></span>
         </a>
 
-        <a class="site-card" href="https://chat.openai.com" target="_blank" rel="noopener noreferrer">
-          <div class="icon chatgpt">G</div>
-          <div class="site-meta"><b>ChatGPT</b><span>chat.openai.com</span></div>
+        <a class="site" href="https://chat.openai.com" target="_blank" rel="noopener noreferrer">
+          <span class="icon chatgpt" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2a4.8 4.8 0 014.6 3.4A4.8 4.8 0 0121 10a4.8 4.8 0 01-1.7 3.7 4.8 4.8 0 01-3.8 7.9 4.8 4.8 0 01-3.5-1.4 4.8 4.8 0 01-7.9-3.8 4.8 4.8 0 01-1.5-8.5A4.8 4.8 0 016.8 3a4.8 4.8 0 015.2-1z"/></svg>
+          </span>
+          <span><strong>ChatGPT</strong><small>chat.openai.com</small></span>
         </a>
 
-        <a class="site-card" href="https://www.deepseek.com" target="_blank" rel="noopener noreferrer">
-          <div class="icon deepseek">D</div>
-          <div class="site-meta"><b>DeepSeek</b><span>www.deepseek.com</span></div>
+        <a class="site" href="https://www.deepseek.com" target="_blank" rel="noopener noreferrer">
+          <span class="icon deepseek" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3l8 4v10l-8 4-8-4V7l8-4zm0 2.3L6 8v8l6 2.9 6-2.9V8l-6-2.7zm-2.8 4.2h5.6v1.8H9.2V9.5zm0 3.2h5.6v1.8H9.2v-1.8z"/></svg>
+          </span>
+          <span><strong>DeepSeek</strong><small>www.deepseek.com</small></span>
         </a>
 
-        <a class="site-card" href="https://www.doubao.com" target="_blank" rel="noopener noreferrer">
-          <div class="icon doubao">豆</div>
-          <div class="site-meta"><b>豆包</b><span>www.doubao.com</span></div>
+        <a class="site" href="https://www.doubao.com" target="_blank" rel="noopener noreferrer">
+          <span class="icon doubao" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2c5.4 0 9 3.4 9 8.2 0 4.9-3.7 8.6-8.8 8.6H9.8L6 22l.7-3.6C4.4 17 3 14.6 3 11.8 3 6.3 6.9 2 12 2zm-3 6.8v2h6v-2H9zm0 3.7v2h4.5v-2H9z"/></svg>
+          </span>
+          <span><strong>豆包</strong><small>www.doubao.com</small></span>
         </a>
       </div>
     </section>
 
-    <section class="panel notes">
-      <h2 class="section-title">📝 记事本</h2>
-      <textarea id="memo" placeholder="写下今天的计划、灵感、待办事项...\n\n支持自动保存到浏览器本地。"></textarea>
-      <div class="actions">
-        <button id="saveBtn" type="button">保存笔记</button>
-        <button id="clearBtn" class="secondary" type="button">清空笔记</button>
-      </div>
-      <div class="tips">提示：内容会自动保存到本地（localStorage），刷新后不会丢失。</div>
-    </section>
+    <div class="footer">简洁清爽，打开就能用</div>
   </main>
 
   <script>
-    const KEY = "my_blog_navigation_notes";
-    const memo = document.getElementById("memo");
-    const saveBtn = document.getElementById("saveBtn");
-    const clearBtn = document.getElementById("clearBtn");
-
-    memo.value = localStorage.getItem(KEY) || "";
-
-    function saveMemo() {
-      localStorage.setItem(KEY, memo.value);
-      saveBtn.textContent = "已保存 ✅";
-      setTimeout(() => {
-        saveBtn.textContent = "保存笔记";
-      }, 1200);
+    const clock = document.getElementById("clock");
+    function updateClock() {
+      const now = new Date();
+      clock.textContent = `当前时间：${now.toLocaleString("zh-CN", { hour12: false })}`;
     }
-
-    saveBtn.addEventListener("click", saveMemo);
-
-    memo.addEventListener("input", () => {
-      localStorage.setItem(KEY, memo.value);
-    });
-
-    clearBtn.addEventListener("click", () => {
-      memo.value = "";
-      localStorage.removeItem(KEY);
-    });
+    updateClock();
+    setInterval(updateClock, 1000);
   </script>
 </body>
 </html>
