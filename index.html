@@ -6,15 +6,15 @@
   <title>我的导览博客页</title>
   <style>
     :root {
-      --bg: #f6f9ff;
-      --bg-soft: #eef4ff;
-      --card: rgba(255, 255, 255, 0.9);
-      --card-border: rgba(147, 176, 255, 0.3);
-      --text: #1d2b53;
-      --muted: #5f6f99;
-      --primary: #5c7cff;
-      --primary-strong: #4668f5;
-      --shadow: 0 12px 30px rgba(59, 93, 201, 0.18);
+      --bg1: #0f1021;
+      --bg2: #1e214b;
+      --card: rgba(255, 255, 255, 0.12);
+      --card-border: rgba(255, 255, 255, 0.2);
+      --text: #f3f5ff;
+      --muted: #b9c0ff;
+      --primary: #7e8dff;
+      --primary-strong: #5f73ff;
+      --good-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     }
 
     * {
@@ -26,10 +26,9 @@
       min-height: 100vh;
       font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(circle at 10% 0%, #dbe7ff 0, transparent 35%),
-        radial-gradient(circle at 95% 5%, #dff8ff 0, transparent 30%),
-        linear-gradient(180deg, var(--bg), #f9fbff 55%, #f2f7ff 100%);
+      background: radial-gradient(circle at 20% 20%, #323579 0, transparent 35%),
+        radial-gradient(circle at 85% 15%, #2b7ea3 0, transparent 30%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
       padding: 28px;
     }
 
@@ -42,11 +41,11 @@
     }
 
     .panel {
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(14px);
       background: var(--card);
       border: 1px solid var(--card-border);
       border-radius: 18px;
-      box-shadow: var(--shadow);
+      box-shadow: var(--good-shadow);
       padding: 22px;
     }
 
@@ -54,7 +53,7 @@
       margin: 0;
       font-size: 32px;
       line-height: 1.2;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.5px;
     }
 
     .hero p {
@@ -72,17 +71,17 @@
     .search-row input {
       flex: 1;
       min-width: 180px;
-      border: 1px solid #c4d4ff;
-      background: var(--bg-soft);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.08);
       border-radius: 12px;
       padding: 12px 14px;
-      color: var(--text);
+      color: #fff;
       font-size: 15px;
       outline: none;
     }
 
     .search-row input::placeholder {
-      color: #8392bb;
+      color: #d5d9ff;
     }
 
     .search-row button {
@@ -103,7 +102,7 @@
     .section-title {
       margin: 0 0 14px;
       font-size: 20px;
-      color: #1c2a56;
+      color: #f6f7ff;
     }
 
     .link-grid {
@@ -116,8 +115,8 @@
       text-decoration: none;
       color: inherit;
       border-radius: 14px;
-      border: 1px solid #d8e3ff;
-      background: #f8fbff;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
       padding: 12px;
       display: flex;
       align-items: center;
@@ -127,8 +126,8 @@
 
     .site-card:hover {
       transform: translateY(-2px);
-      border-color: #adc4ff;
-      background: #f0f6ff;
+      border-color: rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.14);
     }
 
     .icon {
@@ -143,11 +142,11 @@
       flex-shrink: 0;
     }
 
-    .luogu { background: linear-gradient(135deg, #2d9bff, #1f70d9); }
-    .bbcoj { background: linear-gradient(135deg, #7a63ff, #4b39ca); }
-    .chatgpt { background: linear-gradient(135deg, #26b18d, #16866a); }
-    .deepseek { background: linear-gradient(135deg, #4c88ff, #2956c2); }
-    .doubao { background: linear-gradient(135deg, #ff9f2d, #f0702d); }
+    .luogu { background: linear-gradient(135deg, #1a93ff, #0b5fcb); }
+    .bbcoj { background: linear-gradient(135deg, #6d4dff, #3d2cb5); }
+    .chatgpt { background: linear-gradient(135deg, #10a37f, #066f56); }
+    .deepseek { background: linear-gradient(135deg, #2a74ff, #1742a3); }
+    .doubao { background: linear-gradient(135deg, #ff8a00, #d85f0a); }
 
     .site-meta b {
       display: block;
@@ -157,7 +156,7 @@
 
     .site-meta span {
       font-size: 12px;
-      color: #6778a6;
+      color: #ccd3ff;
       word-break: break-all;
     }
 
@@ -172,9 +171,9 @@
       min-height: 280px;
       resize: vertical;
       border-radius: 12px;
-      border: 1px solid #c5d6ff;
-      background: #f2f7ff;
-      color: #263662;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(6, 9, 39, 0.42);
+      color: #f2f4ff;
       padding: 12px;
       font-size: 14px;
       line-height: 1.6;
@@ -197,12 +196,12 @@
     }
 
     .notes button.secondary {
-      background: #9aa9cf;
+      background: rgba(255, 255, 255, 0.2);
     }
 
     .tips {
       margin-top: 10px;
-      color: #61729f;
+      color: #c6ccff;
       font-size: 12px;
     }
 
@@ -219,13 +218,8 @@
       <h1>✨ 我的个人导览博客页</h1>
       <p>集成了常用网站快捷入口、CNBing 搜索和本地记事本，打开页面即可高效开始一天。</p>
 
-      <form
-        class="search-row"
-        action="https://cn.bing.com/search"
-        method="get"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      <form class="search-row" action="https://cn.bing.com/search" method="get" target="_blank">
+The search form submits with `target="_blank"` but no `rel="noopener"`, so the newly opened tab keeps a live `window.opener` reference to this page. In practice, if a user opens search results and then lands on an untrusted site in that same tab, that site can redirect or manipulate the original page (tabnabbing). Please add `rel="noopener noreferrer"` (or avoid `_blank`) on the form to prevent opener access.
         <input type="text" name="q" placeholder="在 CNBing 中搜索你想了解的内容..." />
         <button type="submit">🔍 搜索</button>
       </form>
@@ -261,9 +255,7 @@
 
     <section class="panel notes">
       <h2 class="section-title">📝 记事本</h2>
-      <textarea id="memo" placeholder="写下今天的计划、灵感、待办事项...
-
-支持自动保存到浏览器本地。"></textarea>
+      <textarea id="memo" placeholder="写下今天的计划、灵感、待办事项...\n\n支持自动保存到浏览器本地。"></textarea>
       <div class="actions">
         <button id="saveBtn" type="button">保存笔记</button>
         <button id="clearBtn" class="secondary" type="button">清空笔记</button>
