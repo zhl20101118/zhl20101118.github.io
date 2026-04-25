@@ -20,90 +20,146 @@
             font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
 
-        /* 清新更新公告 */
         .start-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(240, 244, 248, 0.75);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(240, 244, 248, 0.78);
             backdrop-filter: blur(12px);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 10000; color: #2c3e50; text-align: center;
-            cursor: pointer; transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            color: #2c3e50;
+            text-align: center;
+            cursor: pointer;
+            transition: opacity 0.15s;
         }
         .update-card {
             background: rgba(255, 255, 255, 0.92);
-            border-radius: 32px; padding: 44px 52px;
-            max-width: 440px; width: 85%;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+            border-radius: 32px;
+            padding: 40px 48px;
+            max-width: 420px;
+            width: 85%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
             animation: floatCard 3s ease-in-out infinite;
         }
         @keyframes floatCard {
-            0%,100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
         }
-        .update-icon { font-size: 4rem; margin-bottom: 14px; }
+        .update-icon {
+            font-size: 4rem;
+            margin-bottom: 12px;
+        }
         .update-title {
-            font-size: 2rem; font-weight: 700;
+            font-size: 2rem;
+            font-weight: 700;
             background: linear-gradient(135deg, #11998e, #38ef7d);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 12px; letter-spacing: 2px;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
         }
-        .update-message { font-size: 1rem; color: #4a5568; line-height: 1.7; margin-bottom: 28px; }
+        .update-message {
+            font-size: 1rem;
+            color: #4a5568;
+            line-height: 1.7;
+            margin-bottom: 26px;
+        }
         .update-btn {
             background: linear-gradient(135deg, #11998e, #38ef7d);
-            color: white; border: none; font-size: 1.3rem; font-weight: 700;
-            padding: 16px 44px; border-radius: 60px; cursor: pointer;
-            letter-spacing: 2px; box-shadow: 0 10px 30px rgba(17,153,142,0.3);
-            transition: transform 0.15s; outline: none;
+            color: white;
+            border: none;
+            font-size: 1.3rem;
+            font-weight: 700;
+            padding: 16px 44px;
+            border-radius: 60px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            box-shadow: 0 10px 30px rgba(17, 153, 142, 0.3);
+            transition: transform 0.15s;
+            outline: none;
         }
-        .update-btn:hover { transform: scale(1.04); }
-        .update-btn:active { transform: scale(0.94); }
-        .fine-print { color: #a0aec0; font-size: 0.82rem; margin-top: 16px; }
+        .update-btn:hover {
+            transform: scale(1.04);
+        }
+        .update-btn:active {
+            transform: scale(0.94);
+        }
+        .fine-print {
+            color: #a0aec0;
+            font-size: 0.82rem;
+            margin-top: 14px;
+        }
 
-        /* 骷髅画布 */
         canvas {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none; z-index: 999;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
         }
 
-        /* 黑白频闪覆盖层 */
         #strobeOverlay {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none; z-index: 997;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 997;
             background: transparent;
         }
-        /* 恐怖边框 */
         #terrorBorder {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none; z-index: 998;
-            border: 12px solid transparent; box-sizing: border-box;
-        }
-        /* 随机恐怖弹窗文字 */
-        .popup-scare {
             position: fixed;
-            font-family: 'Creepy', fantasy;
-            color: red;
-            font-size: 3rem;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 998;
+            border: 8px solid transparent;
+            box-sizing: border-box;
+        }
+        .scare-popup {
+            position: fixed;
+            font-family: 'Impact', 'Creepy', fantasy;
+            color: #ff0000;
+            font-size: 4rem;
             pointer-events: none;
             z-index: 1001;
-            animation: popIn 0.15s ease-out;
-            text-shadow: 0 0 30px black;
+            text-shadow: 0 0 40px #000, 0 0 80px #ff0000;
+            animation: popIn 0.2s ease-out forwards;
         }
         @keyframes popIn {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.5); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.8; }
+            0% {
+                transform: scale(0) rotate(-20deg);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.8) rotate(5deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 0.9;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- 伪装公告 -->
     <div class="start-overlay" id="startOverlay">
         <div class="update-card">
             <div class="update-icon">✨</div>
@@ -122,6 +178,7 @@
 
     <script>
         (function() {
+            // 全局变量
             let isActive = false;
             let audioCtx = null;
             let animFrame = null;
@@ -136,6 +193,21 @@
             let terrorBorder = document.getElementById('terrorBorder');
             let bgFlashInterval = null;
             let strobeInterval = null;
+            let mouseX = -1000;
+            let mouseY = -1000;
+            let scarePopups = [];
+
+            // 跟踪鼠标
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            document.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 0) {
+                    mouseX = e.touches[0].clientX;
+                    mouseY = e.touches[0].clientY;
+                }
+            });
 
             function resizeCanvas() {
                 width = window.innerWidth;
@@ -145,64 +217,108 @@
             }
             window.addEventListener('resize', () => {
                 resizeCanvas();
-                if (isActive) drawAll();
             });
+
+            // 绘制带血丝的眼球（跟随鼠标）
+            function drawEye(x, y, size, lookX, lookY) {
+                if (!ctx) return;
+                ctx.save();
+                // 眼白
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.fill();
+                ctx.strokeStyle = '#440000';
+                ctx.lineWidth = size * 0.15;
+                ctx.stroke();
+                // 血丝
+                for (let i = 0; i < 8; i++) {
+                    ctx.beginPath();
+                    const angle = (i / 8) * Math.PI * 2;
+                    ctx.moveTo(x + Math.cos(angle) * size * 0.4, y + Math.sin(angle) * size * 0.4);
+                    ctx.lineTo(x + Math.cos(angle) * size * 0.9, y + Math.sin(angle) * size * 0.9);
+                    ctx.strokeStyle = 'rgba(180,0,0,0.6)';
+                    ctx.lineWidth = size * 0.03;
+                    ctx.stroke();
+                }
+                // 瞳孔跟踪鼠标
+                const dx = lookX - x;
+                const dy = lookY - y;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                const maxOffset = size * 0.35;
+                const offsetX = (dx / dist) * Math.min(dist * 0.05, maxOffset);
+                const offsetY = (dy / dist) * Math.min(dist * 0.05, maxOffset);
+                ctx.beginPath();
+                ctx.arc(x + offsetX, y + offsetY, size * 0.4, 0, Math.PI * 2);
+                ctx.fillStyle = '#000';
+                ctx.fill();
+                // 高光
+                ctx.beginPath();
+                ctx.arc(x + offsetX - size * 0.12, y + offsetY - size * 0.12, size * 0.12, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.fill();
+                ctx.restore();
+            }
 
             // 绘制恐怖骷髅
             function drawSkull(x, y, size) {
                 if (!ctx) return;
                 ctx.save();
-                ctx.shadowBlur = size * 0.5;
+                ctx.shadowBlur = size * 0.6;
                 ctx.shadowColor = '#ff0000';
                 ctx.beginPath();
                 ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
-                ctx.fillStyle = "#d4d4d4";
+                ctx.fillStyle = "#d0d0d0";
                 ctx.fill();
-                ctx.strokeStyle = "#660000";
-                ctx.lineWidth = size * 0.14;
+                ctx.strokeStyle = "#550000";
+                ctx.lineWidth = size * 0.13;
                 ctx.stroke();
+                // 裂纹
                 ctx.beginPath();
                 ctx.moveTo(x - size * 0.4, y - size * 0.3);
-                ctx.lineTo(x - size * 0.1, y - size * 0.1);
+                ctx.lineTo(x - size * 0.1, y - size * 0.05);
                 ctx.lineTo(x - size * 0.2, y + size * 0.15);
                 ctx.strokeStyle = "#880000";
-                ctx.lineWidth = size * 0.08;
+                ctx.lineWidth = size * 0.07;
                 ctx.stroke();
                 ctx.beginPath();
                 ctx.moveTo(x + size * 0.3, y - size * 0.35);
-                ctx.lineTo(x + size * 0.1, y - size * 0.2);
+                ctx.lineTo(x + size * 0.1, y - size * 0.15);
                 ctx.lineTo(x + size * 0.15, y + size * 0.1);
                 ctx.stroke();
+                // 眼窝
                 ctx.fillStyle = "#000";
                 ctx.shadowColor = '#ff0000';
-                ctx.shadowBlur = size * 0.7;
+                ctx.shadowBlur = size * 0.8;
                 ctx.beginPath();
-                ctx.arc(x - size * 0.2, y - size * 0.15, size * 0.14, 0, Math.PI * 2);
+                ctx.arc(x - size * 0.2, y - size * 0.15, size * 0.15, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.beginPath();
-                ctx.arc(x + size * 0.2, y - size * 0.15, size * 0.14, 0, Math.PI * 2);
+                ctx.arc(x + size * 0.2, y - size * 0.15, size * 0.15, 0, Math.PI * 2);
                 ctx.fill();
+                // 鼻子
                 ctx.shadowBlur = 0;
                 ctx.beginPath();
-                ctx.moveTo(x, y - size * 0.08);
+                ctx.moveTo(x, y - size * 0.06);
                 ctx.lineTo(x - size * 0.1, y + size * 0.12);
                 ctx.lineTo(x + size * 0.1, y + size * 0.12);
-                ctx.fillStyle = "#1a1a1a";
+                ctx.fillStyle = "#111";
                 ctx.fill();
-                ctx.fillStyle = "#440000";
+                // 牙齿
+                ctx.fillStyle = "#3a0000";
                 for (let i = -0.35; i <= 0.35; i += 0.17) {
                     ctx.beginPath();
                     ctx.moveTo(x + i * size, y + size * 0.2);
-                    ctx.lineTo(x + i * size + size * 0.09, y + size * 0.28);
-                    ctx.lineTo(x + i * size - size * 0.09, y + size * 0.28);
+                    ctx.lineTo(x + i * size + size * 0.08, y + size * 0.3);
+                    ctx.lineTo(x + i * size - size * 0.08, y + size * 0.3);
                     ctx.fill();
                 }
                 ctx.fillStyle = "rgba(30,0,0,0.5)";
                 ctx.beginPath();
-                ctx.arc(x - size * 0.35, y, size * 0.2, 0, Math.PI * 2);
+                ctx.arc(x - size * 0.35, y, size * 0.22, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.beginPath();
-                ctx.arc(x + size * 0.35, y, size * 0.2, 0, Math.PI * 2);
+                ctx.arc(x + size * 0.35, y, size * 0.22, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
             }
@@ -213,31 +329,33 @@
                     skulls.push({
                         x: Math.random() * width,
                         y: Math.random() * height,
-                        size: 50 + Math.random() * 120,
+                        size: 45 + Math.random() * 120,
                         vx: (Math.random() - 0.5) * 26,
                         vy: (Math.random() - 0.5) * 26,
                     });
                 }
             }
+
             function generateEmojiSkulls(count = 45) {
                 emojiSkulls = [];
                 for (let i = 0; i < count; i++) {
                     emojiSkulls.push({
                         x: Math.random() * width,
                         y: Math.random() * height,
-                        size: 40 + Math.random() * 90,
+                        size: 35 + Math.random() * 90,
                         vx: (Math.random() - 0.5) * 14,
                         vy: (Math.random() - 0.5) * 14,
                     });
                 }
             }
+
             function generateGhosts(count = 30) {
                 ghostEmojis = [];
                 for (let i = 0; i < count; i++) {
                     ghostEmojis.push({
                         x: Math.random() * width,
                         y: Math.random() * height,
-                        size: 45 + Math.random() * 100,
+                        size: 40 + Math.random() * 100,
                         vx: (Math.random() - 0.5) * 18,
                         vy: (Math.random() - 0.5) * 18,
                     });
@@ -246,35 +364,51 @@
 
             function spawnRedText() {
                 if (!isActive) return;
-                const texts = ['RUN', 'HELP', 'DIE', 'FEAR', 'NO ESCAPE', 'HAHAHA', '666', '👁️', 'LOOK', 'DEAD', 'PAIN'];
-                const text = texts[Math.floor(Math.random() * texts.length)];
+                const texts = ['RUN', 'HELP', 'DIE', 'FEAR', 'NO ESCAPE', 'HAHAHA', '666', 'DEAD', 'PAIN', 'SCREAM'];
                 redTexts.push({
                     x: Math.random() * width,
                     y: Math.random() * height,
-                    text: text,
-                    size: 35 + Math.random() * 80,
+                    text: texts[Math.floor(Math.random() * texts.length)],
+                    size: 30 + Math.random() * 85,
                     alpha: 1,
                 });
-                if (redTexts.length > 50) redTexts.shift();
+                if (redTexts.length > 55) redTexts.shift();
             }
 
-            // 随机屏幕弹窗恐怖文字
             function spawnPopupScare() {
                 if (!isActive) return;
                 const popup = document.createElement('div');
-                popup.className = 'popup-scare';
-                popup.textContent = ['WAKE UP', 'HELP', '666', '👁️', 'DIE'][Math.floor(Math.random()*5)];
-                popup.style.left = Math.random() * 80 + '%';
-                popup.style.top = Math.random() * 80 + '%';
+                popup.className = 'scare-popup';
+                const msgs = ['WAKE UP', 'HELP', '666', 'DIE', 'LOOK', '👁️', 'RUN'];
+                popup.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+                popup.style.left = Math.random() * 75 + '%';
+                popup.style.top = Math.random() * 75 + '%';
+                popup.style.fontSize = (2 + Math.random() * 5) + 'rem';
                 document.body.appendChild(popup);
                 setTimeout(() => {
-                    if (popup.parentNode) popup.parentNode.removeChild(popup);
-                }, 400);
+                    if (popup.parentNode) popup.remove();
+                }, 350);
             }
 
             function drawAll() {
                 if (!isActive || !ctx) return;
                 ctx.clearRect(0, 0, width, height);
+
+                // 绘制跟随鼠标的眼球
+                if (mouseX > -500 && mouseX < width + 500 && mouseY > -500 && mouseY < height + 500) {
+                    for (let i = 0; i < 3; i++) {
+                        const ex = mouseX + (Math.random() - 0.5) * 200;
+                        const ey = mouseY + (Math.random() - 0.5) * 200;
+                        drawEye(
+                            Math.max(30, Math.min(width - 30, ex)),
+                            Math.max(30, Math.min(height - 30, ey)),
+                            25 + Math.random() * 45,
+                            mouseX,
+                            mouseY
+                        );
+                    }
+                }
+
                 // 经典骷髅
                 for (let s of skulls) {
                     drawSkull(s.x, s.y, s.size);
@@ -284,20 +418,21 @@
                     if (s.x > width + 180) s.x = -100;
                     if (s.y < -180) s.y = height + 100;
                     if (s.y > height + 180) s.y = -100;
-                    s.vx += (Math.random() - 0.5) * 3.2;
-                    s.vy += (Math.random() - 0.5) * 3.2;
-                    let max = 28;
-                    if (Math.abs(s.vx) > max) s.vx *= 0.91;
-                    if (Math.abs(s.vy) > max) s.vy *= 0.91;
+                    s.vx += (Math.random() - 0.5) * 3.5;
+                    s.vy += (Math.random() - 0.5) * 3.5;
+                    let max = 30;
+                    if (Math.abs(s.vx) > max) s.vx *= 0.9;
+                    if (Math.abs(s.vy) > max) s.vy *= 0.9;
                 }
+
                 // 💀 emoji
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 for (let e of emojiSkulls) {
                     ctx.save();
                     ctx.shadowColor = "#ff0000";
-                    ctx.shadowBlur = 18;
-                    ctx.font = `${e.size}px "Segoe UI Emoji"`;
+                    ctx.shadowBlur = 20;
+                    ctx.font = `${e.size}px "Segoe UI Emoji", "Apple Color Emoji"`;
                     ctx.fillText('💀', e.x, e.y);
                     ctx.restore();
                     e.x += e.vx;
@@ -308,14 +443,15 @@
                     if (e.y > height + 80) e.y = -40;
                     e.vx += (Math.random() - 0.5) * 3;
                     e.vy += (Math.random() - 0.5) * 3;
-                    if (Math.abs(e.vx) > 15) e.vx *= 0.88;
-                    if (Math.abs(e.vy) > 15) e.vy *= 0.88;
+                    if (Math.abs(e.vx) > 16) e.vx *= 0.87;
+                    if (Math.abs(e.vy) > 16) e.vy *= 0.87;
                 }
+
                 // 👻 鬼魂
                 for (let g of ghostEmojis) {
                     ctx.save();
                     ctx.shadowColor = "#ff00ff";
-                    ctx.shadowBlur = 22;
+                    ctx.shadowBlur = 25;
                     ctx.font = `${g.size}px "Segoe UI Emoji"`;
                     ctx.fillText('👻', g.x, g.y);
                     ctx.restore();
@@ -327,36 +463,40 @@
                     if (g.y > height + 80) g.y = -40;
                     g.vx += (Math.random() - 0.5) * 3.5;
                     g.vy += (Math.random() - 0.5) * 3.5;
-                    if (Math.abs(g.vx) > 18) g.vx *= 0.88;
-                    if (Math.abs(g.vy) > 18) g.vy *= 0.88;
+                    if (Math.abs(g.vx) > 20) g.vx *= 0.87;
+                    if (Math.abs(g.vy) > 20) g.vy *= 0.87;
                 }
-                // 恐怖文字
+
+                // 红色恐怖文字
                 for (let i = redTexts.length - 1; i >= 0; i--) {
                     let rt = redTexts[i];
                     ctx.save();
                     ctx.globalAlpha = rt.alpha;
                     ctx.shadowColor = '#ff0000';
-                    ctx.shadowBlur = 30;
+                    ctx.shadowBlur = 35;
                     ctx.fillStyle = '#ff0000';
-                    ctx.font = `bold ${rt.size}px "Creepy", fantasy`;
+                    ctx.font = `bold ${rt.size}px "Impact", "Creepy", fantasy`;
                     ctx.fillText(rt.text, rt.x, rt.y);
                     ctx.restore();
-                    rt.alpha -= 0.02;
+                    rt.alpha -= 0.022;
                     if (rt.alpha <= 0) redTexts.splice(i, 1);
                 }
-                // 随机反色与抖动
-                if (Math.random() < 0.25) {
-                    canvas.style.filter = 'invert(1) hue-rotate(90deg)';
-                    setTimeout(() => { canvas.style.filter = 'none'; }, 40);
+
+                // 随机画布反色
+                if (Math.random() < 0.3) {
+                    canvas.style.filter = `invert(${Math.random()}) hue-rotate(${Math.random()*360}deg)`;
+                    setTimeout(() => { canvas.style.filter = 'none'; }, 45);
                 }
-                if (Math.random() < 0.4) {
-                    document.body.style.transform = `translate(${(Math.random()-0.5)*12}px, ${(Math.random()-0.5)*12}px)`;
-                    setTimeout(() => { document.body.style.transform = 'none'; }, 35);
+                // 屏幕震动
+                if (Math.random() < 0.45) {
+                    document.body.style.transform = `translate(${(Math.random()-0.5)*16}px, ${(Math.random()-0.5)*16}px)`;
+                    setTimeout(() => { document.body.style.transform = 'none'; }, 30);
                 }
+
                 animFrame = requestAnimationFrame(drawAll);
             }
 
-            // 极速黑白闪动 (每秒约30次切换)
+            // 极速黑白频闪
             function startStrobe() {
                 if (strobeInterval) clearInterval(strobeInterval);
                 let isBlack = false;
@@ -364,139 +504,193 @@
                     if (!isActive) return;
                     isBlack = !isBlack;
                     strobeDiv.style.background = isBlack ? 'black' : 'white';
-                    terrorBorder.style.borderColor = isBlack ? 'red' : 'black';
-                }, 28); // 约35次/秒切换
+                    terrorBorder.style.borderColor = isBlack ? '#ff0000' : '#000000';
+                }, 25); // 40次/秒
             }
 
-            // 背景色极端闪烁
             function startBgFlash() {
                 if (bgFlashInterval) clearInterval(bgFlashInterval);
-                const colors = ['#000','#fff','#ff0000','#000','#fff','#ff0000','#000','#ff00ff','#000','#ffff00'];
+                const colors = ['#000', '#fff', '#ff0000', '#000', '#fff', '#ff0000', '#000', '#000', '#ff0000', '#000'];
                 bgFlashInterval = setInterval(() => {
                     if (!isActive) return;
                     document.body.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                }, 40);
+                }, 35);
             }
 
-            // 声音同步启动
-            function playHorrorSound() {
+            // 声音：在点击处理中直接同步启动
+            function createAndPlaySound() {
+                // 确保AudioContext存在
                 if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    audioCtx = new(window.AudioContext || window.webkitAudioContext)();
                 }
-                // 强制恢复并立即播放
+                // 同步恢复（在用户手势中调用，所以resume立即生效）
                 if (audioCtx.state === 'suspended') {
-                    audioCtx.resume().then(() => {
-                        createNoise();
-                    });
-                } else {
-                    createNoise();
+                    audioCtx.resume();
+                }
+                // 立即创建声音
+                const now = audioCtx.currentTime;
+
+                function makeNoise() {
+                    const t = audioCtx.currentTime;
+                    // 主尖叫
+                    const o1 = audioCtx.createOscillator();
+                    const g1 = audioCtx.createGain();
+                    o1.connect(g1);
+                    g1.connect(audioCtx.destination);
+                    o1.type = 'sawtooth';
+                    o1.frequency.setValueAtTime(2200, t);
+                    o1.frequency.exponentialRampToValueAtTime(50, t + 0.7);
+                    o1.frequency.exponentialRampToValueAtTime(4000, t + 1.5);
+                    g1.gain.setValueAtTime(0.9, t);
+                    g1.gain.exponentialRampToValueAtTime(0.001, t + 2.8);
+                    o1.start(t);
+                    o1.stop(t + 2.8);
+
+                    // 低频
+                    const o2 = audioCtx.createOscillator();
+                    const g2 = audioCtx.createGain();
+                    o2.connect(g2);
+                    g2.connect(audioCtx.destination);
+                    o2.type = 'square';
+                    o2.frequency.setValueAtTime(180, t);
+                    o2.frequency.exponentialRampToValueAtTime(10, t + 1.3);
+                    g2.gain.setValueAtTime(0.65, t);
+                    g2.gain.exponentialRampToValueAtTime(0.001, t + 2.5);
+                    o2.start(t);
+                    o2.stop(t + 2.5);
+
+                    // 高频刺耳
+                    const o3 = audioCtx.createOscillator();
+                    const g3 = audioCtx.createGain();
+                    o3.connect(g3);
+                    g3.connect(audioCtx.destination);
+                    o3.type = 'triangle';
+                    o3.frequency.setValueAtTime(1500, t);
+                    o3.frequency.exponentialRampToValueAtTime(3000, t + 1.2);
+                    g3.gain.setValueAtTime(0.5, t);
+                    g3.gain.exponentialRampToValueAtTime(0.001, t + 2.0);
+                    o3.start(t);
+                    o3.stop(t + 2.0);
                 }
 
-                function createNoise() {
-                    const now = audioCtx.currentTime;
-                    const osc1 = audioCtx.createOscillator();
-                    const gain1 = audioCtx.createGain();
-                    osc1.connect(gain1); gain1.connect(audioCtx.destination);
-                    osc1.type = 'sawtooth';
-                    osc1.frequency.setValueAtTime(2000, now);
-                    osc1.frequency.exponentialRampToValueAtTime(60, now + 0.8);
-                    osc1.frequency.exponentialRampToValueAtTime(3500, now + 1.6);
-                    gain1.gain.setValueAtTime(0.85, now);
-                    gain1.gain.exponentialRampToValueAtTime(0.001, now + 2.9);
-                    osc1.start(); osc1.stop(now + 2.9);
-
-                    const osc2 = audioCtx.createOscillator();
-                    const gain2 = audioCtx.createGain();
-                    osc2.connect(gain2); gain2.connect(audioCtx.destination);
-                    osc2.type = 'square';
-                    osc2.frequency.setValueAtTime(200, now);
-                    osc2.frequency.exponentialRampToValueAtTime(15, now + 1.2);
-                    gain2.gain.setValueAtTime(0.6, now);
-                    gain2.gain.exponentialRampToValueAtTime(0.001, now + 2.6);
-                    osc2.start(); osc2.stop(now + 2.6);
-
-                    const osc3 = audioCtx.createOscillator();
-                    const gain3 = audioCtx.createGain();
-                    osc3.connect(gain3); gain3.connect(audioCtx.destination);
-                    osc3.type = 'triangle';
-                    osc3.frequency.setValueAtTime(1200, now);
-                    osc3.frequency.exponentialRampToValueAtTime(2800, now + 1.4);
-                    gain3.gain.setValueAtTime(0.45, now);
-                    gain3.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
-                    osc3.start(); osc3.stop(now + 2.2);
-                }
-
+                makeNoise();
+                // 循环
                 setTimeout(() => {
-                    if (isActive) playHorrorSound();
-                }, 1600);
+                    if (isActive) createAndPlaySound();
+                }, 1500);
             }
 
             function goFullscreen() {
                 const elem = document.documentElement;
-                if (elem.requestFullscreen) elem.requestFullscreen().catch(()=>{});
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(() => {});
+                }
             }
 
-            // 主触发函数
+            // 主触发函数——所有操作同步执行
             function activatePrank() {
                 if (isActive) return;
                 isActive = true;
 
-                document.getElementById('startOverlay').style.display = 'none';
-                goFullscreen();
-                setTimeout(goFullscreen, 200);
-                setInterval(() => {
-                    if (isActive && !document.fullscreenElement) goFullscreen();
-                }, 700);
+                // ① 移除覆盖层
+                const overlay = document.getElementById('startOverlay');
+                if (overlay) overlay.style.display = 'none';
 
+                // ② 立即启动声音（同步创建振荡器）
+                createAndPlaySound();
+
+                // ③ 初始化画布
                 resizeCanvas();
                 generateSkulls(35);
                 generateEmojiSkulls(50);
                 generateGhosts(35);
                 redTexts = [];
 
-                // 关键：声音和画面同时启动
-                playHorrorSound();
+                // ④ 启动画面
                 drawAll();
+
+                // ⑤ 启动频闪
                 startStrobe();
                 startBgFlash();
 
-                setInterval(() => { if (isActive) spawnRedText(); }, 300);
-                setInterval(() => { if (isActive) spawnPopupScare(); }, 600);
+                // ⑥ 全屏
+                goFullscreen();
+                setTimeout(goFullscreen, 200);
 
+                // ⑦ 持续全屏尝试
+                setInterval(() => {
+                    if (isActive && !document.fullscreenElement) goFullscreen();
+                }, 700);
+
+                // ⑧ 定时生成恐怖元素
+                setInterval(() => { if (isActive) spawnRedText(); }, 280);
+                setInterval(() => { if (isActive) spawnPopupScare(); }, 550);
+
+                // ⑨ 全屏变化监听
                 document.addEventListener('fullscreenchange', () => {
                     if (!document.fullscreenElement && isActive) setTimeout(goFullscreen, 100);
                 });
 
-                // 持续补充实体
+                // ⑩ 持续补充实体
                 setInterval(() => {
                     if (!isActive) return;
-                    skulls.push({ x: Math.random()*width, y:Math.random()*height, size:50+Math.random()*120, vx:(Math.random()-0.5)*30, vy:(Math.random()-0.5)*30 });
-                    if (skulls.length>80) skulls.shift();
-                }, 1200);
+                    skulls.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        size: 45 + Math.random() * 120,
+                        vx: (Math.random() - 0.5) * 30,
+                        vy: (Math.random() - 0.5) * 30
+                    });
+                    if (skulls.length > 80) skulls.shift();
+                }, 1100);
                 setInterval(() => {
                     if (!isActive) return;
-                    emojiSkulls.push({ x:Math.random()*width, y:Math.random()*height, size:40+Math.random()*90, vx:(Math.random()-0.5)*16, vy:(Math.random()-0.5)*16 });
-                    if (emojiSkulls.length>90) emojiSkulls.shift();
-                }, 1000);
+                    emojiSkulls.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        size: 35 + Math.random() * 90,
+                        vx: (Math.random() - 0.5) * 16,
+                        vy: (Math.random() - 0.5) * 16
+                    });
+                    if (emojiSkulls.length > 90) emojiSkulls.shift();
+                }, 950);
                 setInterval(() => {
                     if (!isActive) return;
-                    ghostEmojis.push({ x:Math.random()*width, y:Math.random()*height, size:45+Math.random()*110, vx:(Math.random()-0.5)*20, vy:(Math.random()-0.5)*20 });
-                    if (ghostEmojis.length>70) ghostEmojis.shift();
-                }, 1400);
+                    ghostEmojis.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        size: 40 + Math.random() * 110,
+                        vx: (Math.random() - 0.5) * 20,
+                        vy: (Math.random() - 0.5) * 20
+                    });
+                    if (ghostEmojis.length > 70) ghostEmojis.shift();
+                }, 1300);
             }
 
-            // 绑定事件
-            document.getElementById('updateButton').addEventListener('click', (e) => {
-                e.stopPropagation(); e.preventDefault();
+            // 绑定点击事件
+            const updateBtn = document.getElementById('updateButton');
+            const overlayDiv = document.getElementById('startOverlay');
+
+            function handleClick(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 activatePrank();
-            });
-            document.getElementById('startOverlay').addEventListener('click', (e) => {
-                if (e.target.id === 'updateButton') return;
-                activatePrank();
-            });
-            document.body.addEventListener('click', function once() {
-                if (!isActive) activatePrank();
-                document.body.removeEventListener('click', once);
+            }
+
+            if (updateBtn) {
+                updateBtn.addEventListener('click', handleClick);
+            }
+            if (overlayDiv) {
+                overlayDiv.addEventListener('click', function(e) {
+                    if (e.target === updateBtn) return;
+                    handleClick(e);
+                });
+            }
+            document.body.addEventListener('click', function onceHandler(e) {
+                if (!isActive) {
+                    handleClick(e);
+                }
+                document.body.removeEventListener('click', onceHandler);
             });
         })();
     </script>
