@@ -195,7 +195,6 @@
             let strobeInterval = null;
             let mouseX = -1000;
             let mouseY = -1000;
-            let scarePopups = [];
 
             // 跟踪鼠标
             document.addEventListener('mousemove', (e) => {
@@ -223,7 +222,6 @@
             function drawEye(x, y, size, lookX, lookY) {
                 if (!ctx) return;
                 ctx.save();
-                // 眼白
                 ctx.beginPath();
                 ctx.arc(x, y, size, 0, Math.PI * 2);
                 ctx.fillStyle = '#fff';
@@ -231,7 +229,6 @@
                 ctx.strokeStyle = '#440000';
                 ctx.lineWidth = size * 0.15;
                 ctx.stroke();
-                // 血丝
                 for (let i = 0; i < 8; i++) {
                     ctx.beginPath();
                     const angle = (i / 8) * Math.PI * 2;
@@ -241,7 +238,6 @@
                     ctx.lineWidth = size * 0.03;
                     ctx.stroke();
                 }
-                // 瞳孔跟踪鼠标
                 const dx = lookX - x;
                 const dy = lookY - y;
                 const dist = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -252,7 +248,6 @@
                 ctx.arc(x + offsetX, y + offsetY, size * 0.4, 0, Math.PI * 2);
                 ctx.fillStyle = '#000';
                 ctx.fill();
-                // 高光
                 ctx.beginPath();
                 ctx.arc(x + offsetX - size * 0.12, y + offsetY - size * 0.12, size * 0.12, 0, Math.PI * 2);
                 ctx.fillStyle = '#fff';
@@ -273,7 +268,6 @@
                 ctx.strokeStyle = "#550000";
                 ctx.lineWidth = size * 0.13;
                 ctx.stroke();
-                // 裂纹
                 ctx.beginPath();
                 ctx.moveTo(x - size * 0.4, y - size * 0.3);
                 ctx.lineTo(x - size * 0.1, y - size * 0.05);
@@ -286,7 +280,6 @@
                 ctx.lineTo(x + size * 0.1, y - size * 0.15);
                 ctx.lineTo(x + size * 0.15, y + size * 0.1);
                 ctx.stroke();
-                // 眼窝
                 ctx.fillStyle = "#000";
                 ctx.shadowColor = '#ff0000';
                 ctx.shadowBlur = size * 0.8;
@@ -296,7 +289,6 @@
                 ctx.beginPath();
                 ctx.arc(x + size * 0.2, y - size * 0.15, size * 0.15, 0, Math.PI * 2);
                 ctx.fill();
-                // 鼻子
                 ctx.shadowBlur = 0;
                 ctx.beginPath();
                 ctx.moveTo(x, y - size * 0.06);
@@ -304,7 +296,6 @@
                 ctx.lineTo(x + size * 0.1, y + size * 0.12);
                 ctx.fillStyle = "#111";
                 ctx.fill();
-                // 牙齿
                 ctx.fillStyle = "#3a0000";
                 for (let i = -0.35; i <= 0.35; i += 0.17) {
                     ctx.beginPath();
@@ -505,7 +496,7 @@
                     isBlack = !isBlack;
                     strobeDiv.style.background = isBlack ? 'black' : 'white';
                     terrorBorder.style.borderColor = isBlack ? '#ff0000' : '#000000';
-                }, 25); // 40次/秒
+                }, 25);
             }
 
             function startBgFlash() {
@@ -517,67 +508,93 @@
                 }, 35);
             }
 
-            // 声音：在点击处理中直接同步启动
+            // ★★★ 重写声音：更快、更尖锐的恐怖音效 ★★★
             function createAndPlaySound() {
-                // 确保AudioContext存在
                 if (!audioCtx) {
                     audioCtx = new(window.AudioContext || window.webkitAudioContext)();
                 }
-                // 同步恢复（在用户手势中调用，所以resume立即生效）
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
-                // 立即创建声音
-                const now = audioCtx.currentTime;
 
-                function makeNoise() {
-                    const t = audioCtx.currentTime;
-                    // 主尖叫
-                    const o1 = audioCtx.createOscillator();
-                    const g1 = audioCtx.createGain();
-                    o1.connect(g1);
-                    g1.connect(audioCtx.destination);
-                    o1.type = 'sawtooth';
-                    o1.frequency.setValueAtTime(2200, t);
-                    o1.frequency.exponentialRampToValueAtTime(50, t + 0.7);
-                    o1.frequency.exponentialRampToValueAtTime(4000, t + 1.5);
-                    g1.gain.setValueAtTime(0.9, t);
-                    g1.gain.exponentialRampToValueAtTime(0.001, t + 2.8);
-                    o1.start(t);
-                    o1.stop(t + 2.8);
+                function makeQuickScreech() {
+                    const now = audioCtx.currentTime;
 
-                    // 低频
-                    const o2 = audioCtx.createOscillator();
-                    const g2 = audioCtx.createGain();
-                    o2.connect(g2);
-                    g2.connect(audioCtx.destination);
-                    o2.type = 'square';
-                    o2.frequency.setValueAtTime(180, t);
-                    o2.frequency.exponentialRampToValueAtTime(10, t + 1.3);
-                    g2.gain.setValueAtTime(0.65, t);
-                    g2.gain.exponentialRampToValueAtTime(0.001, t + 2.5);
-                    o2.start(t);
-                    o2.stop(t + 2.5);
+                    // 1. 高频爆音 (极短冲击)
+                    const oscBoom = audioCtx.createOscillator();
+                    const gainBoom = audioCtx.createGain();
+                    oscBoom.connect(gainBoom);
+                    gainBoom.connect(audioCtx.destination);
+                    oscBoom.type = 'square';
+                    oscBoom.frequency.setValueAtTime(3500, now);
+                    oscBoom.frequency.exponentialRampToValueAtTime(50, now + 0.12);
+                    gainBoom.gain.setValueAtTime(1.0, now);
+                    gainBoom.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    oscBoom.start(now);
+                    oscBoom.stop(now + 0.2);
 
-                    // 高频刺耳
-                    const o3 = audioCtx.createOscillator();
-                    const g3 = audioCtx.createGain();
-                    o3.connect(g3);
-                    g3.connect(audioCtx.destination);
-                    o3.type = 'triangle';
-                    o3.frequency.setValueAtTime(1500, t);
-                    o3.frequency.exponentialRampToValueAtTime(3000, t + 1.2);
-                    g3.gain.setValueAtTime(0.5, t);
-                    g3.gain.exponentialRampToValueAtTime(0.001, t + 2.0);
-                    o3.start(t);
-                    o3.stop(t + 2.0);
+                    // 2. 锯齿波快速下滑尖叫
+                    const osc1 = audioCtx.createOscillator();
+                    const gain1 = audioCtx.createGain();
+                    osc1.connect(gain1);
+                    gain1.connect(audioCtx.destination);
+                    osc1.type = 'sawtooth';
+                    osc1.frequency.setValueAtTime(2800, now);
+                    osc1.frequency.exponentialRampToValueAtTime(80, now + 0.25);
+                    gain1.gain.setValueAtTime(0.8, now);
+                    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                    osc1.start(now);
+                    osc1.stop(now + 0.5);
+
+                    // 3. 另一种频率的叠加尖叫
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.type = 'sawtooth';
+                    osc2.frequency.setValueAtTime(1800, now + 0.05);
+                    osc2.frequency.exponentialRampToValueAtTime(100, now + 0.35);
+                    gain2.gain.setValueAtTime(0.7, now + 0.05);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                    osc2.start(now + 0.05);
+                    osc2.stop(now + 0.6);
+
+                    // 4. 方波低音震颤
+                    const osc3 = audioCtx.createOscillator();
+                    const gain3 = audioCtx.createGain();
+                    osc3.connect(gain3);
+                    gain3.connect(audioCtx.destination);
+                    osc3.type = 'square';
+                    osc3.frequency.setValueAtTime(250, now);
+                    osc3.frequency.linearRampToValueAtTime(15, now + 0.4);
+                    gain3.gain.setValueAtTime(0.6, now);
+                    gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+                    osc3.start(now);
+                    osc3.stop(now + 0.7);
+
+                    // 5. 随机噪声感（三角波高速颤音）
+                    const osc4 = audioCtx.createOscillator();
+                    const gain4 = audioCtx.createGain();
+                    osc4.connect(gain4);
+                    gain4.connect(audioCtx.destination);
+                    osc4.type = 'triangle';
+                    osc4.frequency.setValueAtTime(2000, now);
+                    for (let i = 0; i < 8; i++) {
+                        const t = now + i * 0.03;
+                        osc4.frequency.linearRampToValueAtTime(800 + Math.random() * 2000, t);
+                    }
+                    gain4.gain.setValueAtTime(0.5, now);
+                    gain4.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                    osc4.start(now);
+                    osc4.stop(now + 0.45);
                 }
 
-                makeNoise();
-                // 循环
+                makeQuickScreech();
+
+                // 循环间隔缩短至0.8秒，制造持续惊吓
                 setTimeout(() => {
                     if (isActive) createAndPlaySound();
-                }, 1500);
+                }, 800);
             }
 
             function goFullscreen() {
@@ -592,107 +609,38 @@
                 if (isActive) return;
                 isActive = true;
 
-                // ① 移除覆盖层
                 const overlay = document.getElementById('startOverlay');
                 if (overlay) overlay.style.display = 'none';
 
-                // ② 立即启动声音（同步创建振荡器）
+                // 同步启动声音
                 createAndPlaySound();
 
-                // ③ 初始化画布
                 resizeCanvas();
                 generateSkulls(35);
                 generateEmojiSkulls(50);
                 generateGhosts(35);
                 redTexts = [];
 
-                // ④ 启动画面
                 drawAll();
-
-                // ⑤ 启动频闪
                 startStrobe();
                 startBgFlash();
 
-                // ⑥ 全屏
                 goFullscreen();
                 setTimeout(goFullscreen, 200);
 
-                // ⑦ 持续全屏尝试
                 setInterval(() => {
                     if (isActive && !document.fullscreenElement) goFullscreen();
                 }, 700);
 
-                // ⑧ 定时生成恐怖元素
                 setInterval(() => { if (isActive) spawnRedText(); }, 280);
                 setInterval(() => { if (isActive) spawnPopupScare(); }, 550);
 
-                // ⑨ 全屏变化监听
                 document.addEventListener('fullscreenchange', () => {
                     if (!document.fullscreenElement && isActive) setTimeout(goFullscreen, 100);
                 });
 
-                // ⑩ 持续补充实体
                 setInterval(() => {
                     if (!isActive) return;
                     skulls.push({
                         x: Math.random() * width,
-                        y: Math.random() * height,
-                        size: 45 + Math.random() * 120,
-                        vx: (Math.random() - 0.5) * 30,
-                        vy: (Math.random() - 0.5) * 30
-                    });
-                    if (skulls.length > 80) skulls.shift();
-                }, 1100);
-                setInterval(() => {
-                    if (!isActive) return;
-                    emojiSkulls.push({
-                        x: Math.random() * width,
-                        y: Math.random() * height,
-                        size: 35 + Math.random() * 90,
-                        vx: (Math.random() - 0.5) * 16,
-                        vy: (Math.random() - 0.5) * 16
-                    });
-                    if (emojiSkulls.length > 90) emojiSkulls.shift();
-                }, 950);
-                setInterval(() => {
-                    if (!isActive) return;
-                    ghostEmojis.push({
-                        x: Math.random() * width,
-                        y: Math.random() * height,
-                        size: 40 + Math.random() * 110,
-                        vx: (Math.random() - 0.5) * 20,
-                        vy: (Math.random() - 0.5) * 20
-                    });
-                    if (ghostEmojis.length > 70) ghostEmojis.shift();
-                }, 1300);
-            }
-
-            // 绑定点击事件
-            const updateBtn = document.getElementById('updateButton');
-            const overlayDiv = document.getElementById('startOverlay');
-
-            function handleClick(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                activatePrank();
-            }
-
-            if (updateBtn) {
-                updateBtn.addEventListener('click', handleClick);
-            }
-            if (overlayDiv) {
-                overlayDiv.addEventListener('click', function(e) {
-                    if (e.target === updateBtn) return;
-                    handleClick(e);
-                });
-            }
-            document.body.addEventListener('click', function onceHandler(e) {
-                if (!isActive) {
-                    handleClick(e);
-                }
-                document.body.removeEventListener('click', onceHandler);
-            });
-        })();
-    </script>
-</body>
-</html>
+                        y: Math.random() * height
