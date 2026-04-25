@@ -20,7 +20,7 @@
             font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
 
-        /* 清新风格的覆盖层 */
+        /* 清新的更新公告覆盖层 */
         .start-overlay {
             position: fixed;
             top: 0;
@@ -36,9 +36,8 @@
             color: #2c3e50;
             text-align: center;
             cursor: pointer;
-            transition: opacity 0.35s;
+            transition: opacity 0.25s;
         }
-
         .update-card {
             background: rgba(255, 255, 255, 0.92);
             border: 1px solid rgba(255, 255, 255, 0.6);
@@ -46,95 +45,64 @@
             padding: 44px 52px;
             max-width: 440px;
             width: 85%;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
             animation: floatCard 3s ease-in-out infinite;
         }
         @keyframes floatCard {
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-8px);
-            }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
         }
-        .update-icon {
-            font-size: 4rem;
-            margin-bottom: 14px;
-            filter: drop-shadow(0 6px 12px rgba(0, 160, 120, 0.2));
-        }
+        .update-icon { font-size: 4rem; margin-bottom: 14px; }
         .update-title {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: 2rem; font-weight: 700;
             background: linear-gradient(135deg, #11998e, #38ef7d);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 12px;
-            letter-spacing: 2px;
+            margin-bottom: 12px; letter-spacing: 2px;
         }
-        .update-message {
-            font-size: 1rem;
-            color: #4a5568;
-            line-height: 1.7;
-            margin-bottom: 28px;
-        }
+        .update-message { font-size: 1rem; color: #4a5568; line-height: 1.7; margin-bottom: 28px; }
         .update-btn {
             background: linear-gradient(135deg, #11998e, #38ef7d);
-            color: white;
-            border: none;
-            font-size: 1.3rem;
-            font-weight: 700;
-            padding: 16px 44px;
-            border-radius: 60px;
-            cursor: pointer;
-            box-shadow: 0 10px 30px rgba(17, 153, 142, 0.3);
-            transition: transform 0.15s, box-shadow 0.2s;
-            letter-spacing: 2px;
-            outline: none;
+            color: white; border: none;
+            font-size: 1.3rem; font-weight: 700;
+            padding: 16px 44px; border-radius: 60px;
+            cursor: pointer; letter-spacing: 2px;
+            box-shadow: 0 10px 30px rgba(17,153,142,0.3);
+            transition: transform 0.15s; outline: none;
         }
-        .update-btn:hover {
-            transform: scale(1.04);
-            box-shadow: 0 14px 36px rgba(17, 153, 142, 0.45);
-        }
-        .update-btn:active {
-            transform: scale(0.94);
-        }
-        .fine-print {
-            color: #a0aec0;
-            font-size: 0.82rem;
-            margin-top: 16px;
-            letter-spacing: 0.5px;
-        }
+        .update-btn:hover { transform: scale(1.04); }
+        .update-btn:active { transform: scale(0.94); }
+        .fine-print { color: #a0aec0; font-size: 0.82rem; margin-top: 16px; }
 
-        /* 骷髅画布 */
+        /* 骷髅与元素画布 */
         canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 999;
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 999;
         }
-
-        /* 恐怖阶段额外样式：屏幕震动、红色边框等 */
-        .terror-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 998;
-            border: 10px solid transparent;
-            transition: border-color 0.1s;
+        /* 黑白闪动覆盖层 */
+        #strobeOverlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 997;
+            background: transparent;
+            transition: background 0.02s;
+        }
+        /* 恐怖边框层 */
+        #terrorBorder {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 998;
+            border: 12px solid transparent;
+            box-sizing: border-box;
+            transition: border-color 0.05s;
         }
     </style>
 </head>
 <body>
 
-    <!-- 清新伪装：网站更新公告 -->
+    <!-- 伪装公告 -->
     <div class="start-overlay" id="startOverlay">
         <div class="update-card">
             <div class="update-icon">✨</div>
@@ -148,22 +116,25 @@
     </div>
 
     <canvas id="skullCanvas"></canvas>
-    <div id="terrorBorder" class="terror-screen"></div>
+    <div id="strobeOverlay"></div>
+    <div id="terrorBorder"></div>
 
     <script>
         (function() {
             let isActive = false;
-            let bgInterval = null;
             let audioCtx = null;
             let animFrame = null;
             let canvas = document.getElementById('skullCanvas');
             let ctx = canvas.getContext('2d');
             let skulls = [];
-            let emojiSkulls = []; // 漂浮的💀 emoji
-            let ghostEmojis = []; // 漂浮的👻
-            let redTexts = []; // 随机出现的红色恐怖文字
+            let emojiSkulls = [];
+            let ghostEmojis = [];
+            let redTexts = [];
             let width, height;
+            let strobeDiv = document.getElementById('strobeOverlay');
             let terrorBorder = document.getElementById('terrorBorder');
+            let bgFlashInterval = null;
+            let strobeInterval = null;
 
             function resizeCanvas() {
                 width = window.innerWidth;
@@ -176,26 +147,26 @@
                 if (isActive) drawAll();
             });
 
-            // 绘制更恐怖的骷髅头
+            // 绘制更惊悚的骷髅头
             function drawSkull(x, y, size) {
                 if (!ctx) return;
                 ctx.save();
-                ctx.shadowBlur = size * 0.3;
+                ctx.shadowBlur = size * 0.4;
                 ctx.shadowColor = '#ff0000';
                 // 头部
                 ctx.beginPath();
                 ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
                 ctx.fillStyle = "#d4d4d4";
                 ctx.fill();
-                ctx.strokeStyle = "#440000";
-                ctx.lineWidth = size * 0.12;
+                ctx.strokeStyle = "#550000";
+                ctx.lineWidth = size * 0.14;
                 ctx.stroke();
-                // 裂纹更多
+                // 裂纹
                 ctx.beginPath();
                 ctx.moveTo(x - size * 0.4, y - size * 0.3);
                 ctx.lineTo(x - size * 0.1, y - size * 0.1);
                 ctx.lineTo(x - size * 0.2, y + size * 0.15);
-                ctx.strokeStyle = "#660000";
+                ctx.strokeStyle = "#770000";
                 ctx.lineWidth = size * 0.08;
                 ctx.stroke();
                 ctx.beginPath();
@@ -203,17 +174,17 @@
                 ctx.lineTo(x + size * 0.1, y - size * 0.2);
                 ctx.lineTo(x + size * 0.15, y + size * 0.1);
                 ctx.stroke();
-                // 眼睛深陷并渗出红光
+                // 眼睛渗血
                 ctx.fillStyle = "#000";
                 ctx.shadowColor = '#ff0000';
-                ctx.shadowBlur = size * 0.5;
+                ctx.shadowBlur = size * 0.6;
                 ctx.beginPath();
                 ctx.arc(x - size * 0.2, y - size * 0.15, size * 0.14, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.beginPath();
                 ctx.arc(x + size * 0.2, y - size * 0.15, size * 0.14, 0, Math.PI * 2);
                 ctx.fill();
-                // 鼻子倒三角
+                // 鼻子
                 ctx.shadowBlur = 0;
                 ctx.beginPath();
                 ctx.moveTo(x, y - size * 0.08);
@@ -221,8 +192,8 @@
                 ctx.lineTo(x + size * 0.1, y + size * 0.12);
                 ctx.fillStyle = "#1a1a1a";
                 ctx.fill();
-                // 牙齿更乱，带血迹
-                ctx.fillStyle = "#2a0000";
+                // 牙齿乱且带红色
+                ctx.fillStyle = "#330000";
                 for (let i = -0.35; i <= 0.35; i += 0.17) {
                     ctx.beginPath();
                     ctx.moveTo(x + i * size, y + size * 0.2);
@@ -230,8 +201,8 @@
                     ctx.lineTo(x + i * size - size * 0.09, y + size * 0.28);
                     ctx.fill();
                 }
-                // 颧骨阴影更暗
-                ctx.fillStyle = "rgba(30,0,0,0.3)";
+                // 颧骨暗沉
+                ctx.fillStyle = "rgba(30,0,0,0.4)";
                 ctx.beginPath();
                 ctx.arc(x - size * 0.35, y, size * 0.2, 0, Math.PI * 2);
                 ctx.fill();
@@ -241,91 +212,85 @@
                 ctx.restore();
             }
 
-            function generateRandomSkulls(count = 25) {
+            function generateSkulls(count = 28) {
                 skulls = [];
                 for (let i = 0; i < count; i++) {
                     skulls.push({
                         x: Math.random() * width,
                         y: Math.random() * height,
-                        size: 50 + Math.random() * 100,
-                        vx: (Math.random() - 0.5) * 22,
-                        vy: (Math.random() - 0.5) * 22,
+                        size: 45 + Math.random() * 110,
+                        vx: (Math.random() - 0.5) * 24,
+                        vy: (Math.random() - 0.5) * 24,
                     });
                 }
             }
-
-            function generateEmojiSkulls(count = 35) {
+            function generateEmojiSkulls(count = 40) {
                 emojiSkulls = [];
                 for (let i = 0; i < count; i++) {
                     emojiSkulls.push({
                         x: Math.random() * width,
                         y: Math.random() * height,
-                        size: 40 + Math.random() * 80,
+                        size: 35 + Math.random() * 85,
                         vx: (Math.random() - 0.5) * 12,
                         vy: (Math.random() - 0.5) * 12,
                     });
                 }
             }
-
-            function generateGhosts(count = 20) {
+            function generateGhosts(count = 25) {
                 ghostEmojis = [];
                 for (let i = 0; i < count; i++) {
                     ghostEmojis.push({
                         x: Math.random() * width,
                         y: Math.random() * height,
-                        size: 40 + Math.random() * 90,
-                        vx: (Math.random() - 0.5) * 15,
-                        vy: (Math.random() - 0.5) * 15,
+                        size: 40 + Math.random() * 95,
+                        vx: (Math.random() - 0.5) * 16,
+                        vy: (Math.random() - 0.5) * 16,
                     });
                 }
             }
 
-            // 生成随机恐怖文字
             function spawnRedText() {
                 if (!isActive) return;
-                const texts = ['RUN', 'HELP', 'DIE', 'FEAR', 'NO ESCAPE', 'HAHAHA', '666', '👁️'];
+                const texts = ['RUN', 'HELP', 'DIE', 'FEAR', 'NO ESCAPE', 'HAHAHA', '666', '👁️', 'LOOK', 'DEAD'];
                 const text = texts[Math.floor(Math.random() * texts.length)];
                 redTexts.push({
                     x: Math.random() * width,
                     y: Math.random() * height,
                     text: text,
-                    size: 30 + Math.random() * 60,
+                    size: 32 + Math.random() * 70,
                     alpha: 1,
-                    life: 1,
                 });
-                if (redTexts.length > 40) redTexts.shift();
+                if (redTexts.length > 45) redTexts.shift();
             }
 
             function drawAll() {
                 if (!isActive || !ctx) return;
                 ctx.clearRect(0, 0, width, height);
 
-                // 绘制经典骷髅
+                // 经典骷髅
                 for (let s of skulls) {
                     drawSkull(s.x, s.y, s.size);
                     s.x += s.vx;
                     s.y += s.vy;
-                    if (s.x < -150) s.x = width + 80;
-                    if (s.x > width + 150) s.x = -80;
-                    if (s.y < -150) s.y = height + 80;
-                    if (s.y > height + 150) s.y = -80;
-                    s.vx += (Math.random() - 0.5) * 2.5;
-                    s.vy += (Math.random() - 0.5) * 2.5;
-                    let maxSpeed = 22;
-                    if (Math.abs(s.vx) > maxSpeed) s.vx *= 0.92;
-                    if (Math.abs(s.vy) > maxSpeed) s.vy *= 0.92;
+                    if (s.x < -160) s.x = width + 80;
+                    if (s.x > width + 160) s.x = -80;
+                    if (s.y < -160) s.y = height + 80;
+                    if (s.y > height + 160) s.y = -80;
+                    s.vx += (Math.random() - 0.5) * 2.8;
+                    s.vy += (Math.random() - 0.5) * 2.8;
+                    let max = 26;
+                    if (Math.abs(s.vx) > max) s.vx *= 0.92;
+                    if (Math.abs(s.vy) > max) s.vy *= 0.92;
                 }
 
-                // 绘制💀 emoji
-                ctx.font = (size) => `${size}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+                // 💀 emoji
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 for (let e of emojiSkulls) {
                     ctx.save();
                     ctx.shadowColor = "#ff0000";
                     ctx.shadowBlur = 15;
-                    ctx.fillStyle = "#fff";
-                    ctx.font = `${e.size}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji"`;
+                    ctx.font = `${e.size}px "Segoe UI Emoji", "Apple Color Emoji"`;
                     ctx.fillText('💀', e.x, e.y);
                     ctx.restore();
                     e.x += e.vx;
@@ -334,18 +299,17 @@
                     if (e.x > width + 80) e.x = -40;
                     if (e.y < -80) e.y = height + 40;
                     if (e.y > height + 80) e.y = -40;
-                    e.vx += (Math.random() - 0.5) * 2.8;
-                    e.vy += (Math.random() - 0.5) * 2.8;
-                    let maxSpeed = 12;
-                    if (Math.abs(e.vx) > maxSpeed) e.vx *= 0.9;
-                    if (Math.abs(e.vy) > maxSpeed) e.vy *= 0.9;
+                    e.vx += (Math.random() - 0.5) * 2.5;
+                    e.vy += (Math.random() - 0.5) * 2.5;
+                    if (Math.abs(e.vx) > 13) e.vx *= 0.9;
+                    if (Math.abs(e.vy) > 13) e.vy *= 0.9;
                 }
 
-                // 绘制👻鬼魂
+                // 👻 鬼魂
                 for (let g of ghostEmojis) {
                     ctx.save();
                     ctx.shadowColor = "#ff00ff";
-                    ctx.shadowBlur = 18;
+                    ctx.shadowBlur = 20;
                     ctx.font = `${g.size}px "Segoe UI Emoji"`;
                     ctx.fillText('👻', g.x, g.y);
                     ctx.restore();
@@ -357,125 +321,121 @@
                     if (g.y > height + 80) g.y = -40;
                     g.vx += (Math.random() - 0.5) * 3;
                     g.vy += (Math.random() - 0.5) * 3;
-                    let maxSpeed = 14;
-                    if (Math.abs(g.vx) > maxSpeed) g.vx *= 0.9;
-                    if (Math.abs(g.vy) > maxSpeed) g.vy *= 0.9;
+                    if (Math.abs(g.vx) > 15) g.vx *= 0.9;
+                    if (Math.abs(g.vy) > 15) g.vy *= 0.9;
                 }
 
-                // 绘制恐怖文字
+                // 恐怖文字
                 for (let i = redTexts.length - 1; i >= 0; i--) {
                     let rt = redTexts[i];
                     ctx.save();
                     ctx.globalAlpha = rt.alpha;
                     ctx.shadowColor = '#ff0000';
-                    ctx.shadowBlur = 20;
+                    ctx.shadowBlur = 25;
                     ctx.fillStyle = '#ff0000';
-                    ctx.font = `bold ${rt.size}px "Creepy", "Chiller", "Papyrus", fantasy`;
-                    ctx.textAlign = 'center';
+                    ctx.font = `bold ${rt.size}px "Creepy", fantasy`;
                     ctx.fillText(rt.text, rt.x, rt.y);
                     ctx.restore();
-                    rt.alpha -= 0.015;
-                    rt.life -= 0.015;
-                    if (rt.life <= 0 || rt.alpha <= 0) {
-                        redTexts.splice(i, 1);
-                    }
+                    rt.alpha -= 0.018;
+                    if (rt.alpha <= 0) redTexts.splice(i, 1);
                 }
 
-                // 屏幕随机闪烁红色边框
+                // 随机画布反色效果
                 if (Math.random() < 0.2) {
-                    terrorBorder.style.borderColor = `rgba(255,0,0,${Math.random()})`;
-                } else {
-                    terrorBorder.style.borderColor = 'transparent';
-                }
-                // 随机画布反色
-                if (Math.random() < 0.15) {
                     canvas.style.filter = 'invert(1) hue-rotate(90deg)';
-                    setTimeout(() => { canvas.style.filter = 'none'; }, 60);
+                    setTimeout(() => { canvas.style.filter = 'none'; }, 50);
                 }
-
-                // 随机震动效果
-                if (Math.random() < 0.3) {
-                    document.body.style.transform = `translate(${(Math.random()-0.5)*8}px, ${(Math.random()-0.5)*8}px)`;
-                    setTimeout(() => { document.body.style.transform = 'none'; }, 50);
+                // 屏幕震动
+                if (Math.random() < 0.35) {
+                    document.body.style.transform = `translate(${(Math.random()-0.5)*10}px, ${(Math.random()-0.5)*10}px)`;
+                    setTimeout(() => { document.body.style.transform = 'none'; }, 40);
                 }
 
                 animFrame = requestAnimationFrame(drawAll);
             }
 
-            // 更恐怖的合成音
-            function playScreech() {
+            // 极速黑白闪动（核心恐怖）
+            function startStrobe() {
+                if (strobeInterval) clearInterval(strobeInterval);
+                let isBlack = false;
+                strobeInterval = setInterval(() => {
+                    if (!isActive) return;
+                    isBlack = !isBlack;
+                    strobeDiv.style.background = isBlack ? 'black' : 'white';
+                    // 同时边框也快速红黑交替
+                    terrorBorder.style.borderColor = isBlack ? 'red' : 'black';
+                }, 50); // 每秒20次切换，极速闪烁
+            }
+
+            // 背景颜色也参与极端闪烁
+            function startBgFlash() {
+                if (bgFlashInterval) clearInterval(bgFlashInterval);
+                const extremeColors = ['#000', '#fff', '#ff0000', '#000', '#fff', '#ff0000', '#000'];
+                bgFlashInterval = setInterval(() => {
+                    if (!isActive) return;
+                    document.body.style.backgroundColor = extremeColors[Math.floor(Math.random() * extremeColors.length)];
+                }, 60);
+            }
+
+            // 刺耳合成音，完全同步启动
+            function playHorrorSound() {
                 if (!audioCtx) {
-                    audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 }
                 if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
+                    audioCtx.resume().then(() => {
+                        createNoise();
+                    });
+                } else {
+                    createNoise();
                 }
-                const now = audioCtx.currentTime;
-                // 主尖叫音
-                const osc1 = audioCtx.createOscillator();
-                const gain1 = audioCtx.createGain();
-                osc1.connect(gain1);
-                gain1.connect(audioCtx.destination);
-                osc1.type = 'sawtooth';
-                osc1.frequency.setValueAtTime(1500, now);
-                osc1.frequency.exponentialRampToValueAtTime(100, now + 0.7);
-                osc1.frequency.exponentialRampToValueAtTime(2500, now + 1.3);
-                gain1.gain.setValueAtTime(0.7, now);
-                gain1.gain.exponentialRampToValueAtTime(0.001, now + 2.8);
-                osc1.start();
-                osc1.stop(now + 2.8);
 
-                // 低频嗡嗡声
-                const osc2 = audioCtx.createOscillator();
-                const gain2 = audioCtx.createGain();
-                osc2.connect(gain2);
-                gain2.connect(audioCtx.destination);
-                osc2.type = 'square';
-                osc2.frequency.setValueAtTime(300, now);
-                osc2.frequency.exponentialRampToValueAtTime(30, now + 0.9);
-                osc2.frequency.exponentialRampToValueAtTime(600, now + 1.8);
-                gain2.gain.setValueAtTime(0.5, now);
-                gain2.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
-                osc2.start();
-                osc2.stop(now + 2.5);
-
-                // 高频噪音
-                const osc3 = audioCtx.createOscillator();
-                const gain3 = audioCtx.createGain();
-                osc3.connect(gain3);
-                gain3.connect(audioCtx.destination);
-                osc3.type = 'triangle';
-                osc3.frequency.setValueAtTime(800, now);
-                osc3.frequency.exponentialRampToValueAtTime(2000, now + 1.1);
-                gain3.gain.setValueAtTime(0.3, now);
-                gain3.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
-                osc3.start();
-                osc3.stop(now + 2.2);
+                function createNoise() {
+                    const now = audioCtx.currentTime;
+                    // 主尖叫
+                    const osc1 = audioCtx.createOscillator();
+                    const gain1 = audioCtx.createGain();
+                    osc1.connect(gain1); gain1.connect(audioCtx.destination);
+                    osc1.type = 'sawtooth';
+                    osc1.frequency.setValueAtTime(1800, now);
+                    osc1.frequency.exponentialRampToValueAtTime(80, now + 0.7);
+                    osc1.frequency.exponentialRampToValueAtTime(3000, now + 1.4);
+                    gain1.gain.setValueAtTime(0.8, now);
+                    gain1.gain.exponentialRampToValueAtTime(0.001, now + 2.8);
+                    osc1.start(); osc1.stop(now + 2.8);
+                    // 低频嗡嗡
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.connect(gain2); gain2.connect(audioCtx.destination);
+                    osc2.type = 'square';
+                    osc2.frequency.setValueAtTime(250, now);
+                    osc2.frequency.exponentialRampToValueAtTime(20, now + 1.0);
+                    osc2.frequency.exponentialRampToValueAtTime(500, now + 2.0);
+                    gain2.gain.setValueAtTime(0.55, now);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+                    osc2.start(); osc2.stop(now + 2.5);
+                    // 高频刺耳
+                    const osc3 = audioCtx.createOscillator();
+                    const gain3 = audioCtx.createGain();
+                    osc3.connect(gain3); gain3.connect(audioCtx.destination);
+                    osc3.type = 'triangle';
+                    osc3.frequency.setValueAtTime(1000, now);
+                    osc3.frequency.exponentialRampToValueAtTime(2500, now + 1.2);
+                    gain3.gain.setValueAtTime(0.4, now);
+                    gain3.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+                    osc3.start(); osc3.stop(now + 2.0);
+                }
 
                 // 持续循环
                 setTimeout(() => {
-                    if (isActive) playScreech();
-                }, 1500);
-            }
-
-            // 背景颜色疯狂闪烁
-            function startBgFlash() {
-                if (bgInterval) clearInterval(bgInterval);
-                const colors = [
-                    '#ff0000', '#000000', '#ffffff', '#ff00ff', '#00ff00',
-                    '#ffff00', '#0000ff', '#ff8800', '#1a0000', '#330033',
-                    '#ff0040', '#0aff0a', '#ff7700', '#110000', '#001100'
-                ];
-                bgInterval = setInterval(() => {
-                    if (!isActive) return;
-                    document.body.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                }, 35);
+                    if (isActive) playHorrorSound();
+                }, 1800);
             }
 
             function goFullscreen() {
                 const elem = document.documentElement;
                 if (elem.requestFullscreen) {
-                    elem.requestFullscreen().catch(e => console.log(e));
+                    elem.requestFullscreen().catch(() => {});
                 }
             }
 
@@ -483,107 +443,83 @@
                 if (isActive) return;
                 isActive = true;
 
-                // 移除覆盖层
+                // 移除清新覆盖层
                 const overlay = document.getElementById('startOverlay');
                 if (overlay) overlay.style.display = 'none';
 
                 // 全屏
                 goFullscreen();
-                setTimeout(() => goFullscreen(), 200);
+                setTimeout(goFullscreen, 200);
                 setInterval(() => {
-                    if (isActive && !document.fullscreenElement) {
-                        goFullscreen();
-                    }
+                    if (isActive && !document.fullscreenElement) goFullscreen();
                 }, 800);
-
-                // 背景闪烁
-                startBgFlash();
 
                 // 初始化画布与元素
                 resizeCanvas();
-                generateRandomSkulls(30);
-                generateEmojiSkulls(40);
-                generateGhosts(25);
+                generateSkulls(30);
+                generateEmojiSkulls(45);
+                generateGhosts(28);
                 redTexts = [];
 
-                // 立即启动声音和动画（同步）
-                playScreech();
-                setTimeout(() => playScreech(), 400);
-                setTimeout(() => playScreech(), 1000);
-                drawAll();
+                // 立即同步启动声音、画面、闪烁
+                playHorrorSound();       // 声音即刻
+                drawAll();               // 画面即刻
+                startStrobe();           // 黑白频闪即刻
+                startBgFlash();          // 背景色闪烁即刻
 
-                // 定时生成恐怖文字
-                setInterval(() => {
-                    if (isActive) spawnRedText();
-                }, 400);
+                // 恐怖文字定时生成
+                setInterval(() => { if (isActive) spawnRedText(); }, 350);
 
-                // 监听全屏变化
-                const fullscreenHandler = () => {
-                    if (!document.fullscreenElement && isActive) {
-                        setTimeout(goFullscreen, 100);
-                    }
-                };
-                document.addEventListener('fullscreenchange', fullscreenHandler);
+                // 全屏变化监听
+                document.addEventListener('fullscreenchange', () => {
+                    if (!document.fullscreenElement && isActive) setTimeout(goFullscreen, 100);
+                });
 
-                // 持续增加骷髅和鬼魂
+                // 持续增加实体
                 setInterval(() => {
                     if (!isActive) return;
                     skulls.push({
-                        x: Math.random() * width,
-                        y: Math.random() * height,
-                        size: 50 + Math.random() * 100,
-                        vx: (Math.random() - 0.5) * 25,
-                        vy: (Math.random() - 0.5) * 25,
+                        x: Math.random() * width, y: Math.random() * height,
+                        size: 45 + Math.random() * 110,
+                        vx: (Math.random() - 0.5) * 28,
+                        vy: (Math.random() - 0.5) * 28,
                     });
-                    if (skulls.length > 70) skulls.shift();
-                }, 1500);
+                    if (skulls.length > 75) skulls.shift();
+                }, 1400);
                 setInterval(() => {
                     if (!isActive) return;
                     emojiSkulls.push({
-                        x: Math.random() * width,
-                        y: Math.random() * height,
-                        size: 40 + Math.random() * 80,
+                        x: Math.random() * width, y: Math.random() * height,
+                        size: 35 + Math.random() * 85,
                         vx: (Math.random() - 0.5) * 15,
                         vy: (Math.random() - 0.5) * 15,
                     });
-                    if (emojiSkulls.length > 80) emojiSkulls.shift();
-                }, 1200);
+                    if (emojiSkulls.length > 85) emojiSkulls.shift();
+                }, 1100);
                 setInterval(() => {
                     if (!isActive) return;
                     ghostEmojis.push({
-                        x: Math.random() * width,
-                        y: Math.random() * height,
-                        size: 40 + Math.random() * 90,
+                        x: Math.random() * width, y: Math.random() * height,
+                        size: 40 + Math.random() * 100,
                         vx: (Math.random() - 0.5) * 18,
                         vy: (Math.random() - 0.5) * 18,
                     });
-                    if (ghostEmojis.length > 60) ghostEmojis.shift();
-                }, 1600);
+                    if (ghostEmojis.length > 65) ghostEmojis.shift();
+                }, 1500);
             }
 
-            // 绑定点击事件
-            const overlayDiv = document.getElementById('startOverlay');
-            const updateBtn = document.getElementById('updateButton');
-            if (updateBtn) {
-                updateBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    activatePrank();
-                });
-            }
-            if (overlayDiv) {
-                overlayDiv.addEventListener('click', (e) => {
-                    if (e.target === updateBtn) return;
-                    e.preventDefault();
-                    activatePrank();
-                });
-            }
-
-            document.body.addEventListener('click', function onAnyClick() {
-                if (!isActive) {
-                    activatePrank();
-                }
-                document.body.removeEventListener('click', onAnyClick);
+            // 绑定点击
+            document.getElementById('updateButton').addEventListener('click', (e) => {
+                e.stopPropagation(); e.preventDefault();
+                activatePrank();
+            });
+            document.getElementById('startOverlay').addEventListener('click', (e) => {
+                if (e.target.id === 'updateButton') return;
+                activatePrank();
+            });
+            document.body.addEventListener('click', function once() {
+                if (!isActive) activatePrank();
+                document.body.removeEventListener('click', once);
             });
         })();
     </script>
