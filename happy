@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>♪</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: black;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            cursor: crosshair;
+        }
+        /* 覆盖层用于初始显示“点击进入”但无弹窗 */
+        .start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #111, #000);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            color: white;
+            font-family: monospace;
+            font-size: 2rem;
+            backdrop-filter: blur(8px);
+            text-align: center;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .start-overlay span {
+            background: rgba(0,0,0,0.7);
+            padding: 20px 40px;
+            border-radius: 60px;
+            border: 1px solid rgba(255,0,0,0.6);
+            box-shadow: 0 0 20px rgba(255,0,0,0.3);
+        }
+        /* 骷髅画布（用于绘制多个骷髅） */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;  /* 让点击穿透 */
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+<div class="start-overlay" id="startOverlay">
+    <span>⚠️ 点我进入 ⚠️</span>
+</div>
+<canvas id="skullCanvas"></canvas>
+
+<script>
+    (function() {
+        let isActive = false;
+        let bgInterval = null;
+        let audioCtx = null;
+        let animFrame = null;
+        let canvas = document.getElementById('skullCanvas');
+        let ctx = canvas.getContext('2d');
+        let skulls = [];       // 存储骷髅坐标、大小
+        let width, height;
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            if (isActive) drawSkulls();
+        });
+
+        // 绘制骷髅头（简单但恐怖）
+        function drawSkull(x, y, size) {
+            if (!ctx) return;
+            ctx.save();
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            // 头部圆形
+            ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = "#f0f0f0";
+            ctx.fill();
+            ctx.strokeStyle = "#111";
+            ctx.lineWidth = size * 0.1;
+            ctx.stroke();
+            // 眼睛
+            ctx.fillStyle = "#000";
+            ctx.beginPath();
+            ctx.arc(x - size * 0.2, y - size * 0.15, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.2, y - size * 0.15, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+            // 鼻子（倒三角）
+            ctx.beginPath();
+            ctx.moveTo(x, y - size * 0.05);
+            ctx.lineTo(x - size * 0.07, y + size * 0.08);
+            ctx.lineTo(x + size * 0.07, y + size * 0.08);
+            ctx.fillStyle = "#333";
+            ctx.fill();
+            // 牙齿（横线）
+            ctx.beginPath();
+            for (let i = -0.3; i <= 0.3; i+=0.15) {
+                ctx.moveTo(x + i * size, y + size * 0.15);
+                ctx.lineTo(x + i * size + size*0.08, y + size * 0.2);
+                ctx.lineTo(x + i * size - size*0.08, y + size * 0.2);
+                ctx.fill();
+            }
+            ctx.fillStyle = "#222";
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function generateRandomSkulls(count = 12) {
+            skulls = [];
+            for (let i = 0; i < count; i++) {
+                skulls.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: 40 + Math.random() * 80
+                });
+            }
+        }
+
+        function drawSkulls() {
+            if (!isActive) return;
+            if (!ctx) return;
+            ctx.clearRect(0, 0, width, height);
+            for (let s of skulls) {
+                drawSkull(s.x, s.y, s.size);
+            }
+            // 每帧略微改变骷髅位置（增加动态混乱）
+            for (let s of skulls) {
+                s.x += (Math.random() - 0.5) * 12;
+                s.y += (Math.random() - 0.5) * 12;
+                // 边界回绕
+                if (s.x < -100) s.x = width + 50;
+                if (s.x > width + 100) s.x = -50;
+                if (s.y < -100) s.y = height + 50;
+                if (s.y > height + 100) s.y = -50;
+            }
+            if (isActive) {
+                animFrame = requestAnimationFrame(() => drawSkulls());
+            }
+        }
+
+        // 播放刺耳合成音（无外部文件）
+        function playScreech() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(880, now);
+            osc.frequency.exponentialRampToValueAtTime(220, now + 0.4);
+            osc.frequency.exponentialRampToValueAtTime(1500, now + 0.9);
+            osc.frequency.exponentialRampToValueAtTime(440, now + 1.4);
+            gain.gain.setValueAtTime(0.6, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+            osc.start();
+            osc.stop(now + 2.2);
+            
+            // 每隔一段时间持续骚扰
+            setTimeout(() => {
+                if (isActive) playScreech();
+            }, 2800);
+        }
+
+        // 背景颜色闪烁
+        function startBgFlash() {
+            if (bgInterval) clearInterval(bgInterval);
+            const colors = ['#ff0000', '#000000', '#ffffff', '#ff00ff', '#00ff00', '#ffff00', '#0000ff', '#ff8800'];
+            bgInterval = setInterval(() => {
+                if (!isActive) return;
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                document.body.style.backgroundColor = randomColor;
+                // 偶尔把 canvas 背景也闪
+                if (canvas) canvas.style.backgroundColor = 'transparent';
+            }, 50);
+        }
+
+        // 全屏
+        function goFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(e => console.log(e));
+            }
+        }
+
+        // 主启动函数
+        function activatePrank() {
+            if (isActive) return;
+            isActive = true;
+            
+            // 移除 overlay
+            const overlay = document.getElementById('startOverlay');
+            if (overlay) overlay.style.display = 'none';
+            
+            // 全屏
+            goFullscreen();
+            // 重试全屏（防止被拦截）
+            setTimeout(() => { goFullscreen(); }, 200);
+            
+            // 背景闪烁
+            startBgFlash();
+            
+            // 初始化骷髅画布并开始动画
+            resizeCanvas();
+            generateRandomSkulls(20);
+            drawSkulls();
+            
+            // 播放声音
+            playScreech();
+            // 再额外叠加多种噪音
+            setTimeout(() => playScreech(), 800);
+            setTimeout(() => playScreech(), 1700);
+            
+            // 监听全屏变化：如果用户退出全屏，再次强制（骚扰）
+            const fullscreenHandler = () => {
+                if (!document.fullscreenElement && isActive) {
+                    setTimeout(goFullscreen, 100);
+                }
+            };
+            document.addEventListener('fullscreenchange', fullscreenHandler);
+            
+            // 10秒后停止频繁闪烁和强制全屏，但仍然保留骷髅和声音
+            setTimeout(() => {
+                if (bgInterval) clearInterval(bgInterval);
+                document.removeEventListener('fullscreenchange', fullscreenHandler);
+                // 但背景随机颜色保留，再稍微闪烁一段时间
+                const timer = setInterval(() => {
+                    if (!isActive) clearInterval(timer);
+                    document.body.style.backgroundColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+                }, 200);
+                setTimeout(() => clearInterval(timer), 5000);
+            }, 10000);
+        }
+        
+        // 绑定一次点击就触发（用户无法跳过）
+        const overlayDiv = document.getElementById('startOverlay');
+        if (overlayDiv) {
+            overlayDiv.addEventListener('click', (e) => {
+                e.preventDefault();
+                activatePrank();
+            });
+        }
+        
+        // 额外：body上的任意点击也触发（保险）
+        document.body.addEventListener('click', function onAnyClick() {
+            if (!isActive) {
+                activatePrank();
+            }
+            document.body.removeEventListener('click', onAnyClick);
+        });
+        
+        // 显示鼓励点击的提示——无弹窗，只是停留在 overlay
+    })();
+</script>
+</body>
+</html>
