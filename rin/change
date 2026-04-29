@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>折叠块转换器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background: #f1f5f9;
+            font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 24px 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 0 0 20px 0;
+        }
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        button, .file-label {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            background: #f8fafc;
+        }
+        button.primary {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+        button.primary:hover {
+            background: #2563eb;
+        }
+        button:hover {
+            background: #e2e8f0;
+        }
+        .file-label {
+            display: inline-block;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .panels {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-header {
+            padding: 12px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        textarea, .preview {
+            width: 100%;
+            padding: 20px;
+            font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            border: none;
+            resize: vertical;
+            background: #ffffff;
+            outline: none;
+            min-height: 550px;
+        }
+        textarea {
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .preview {
+            background: #fff;
+            overflow-y: auto;
+            border-left: 1px solid #e2e8f0;
+        }
+        .copy-btn {
+            background: none;
+            border: none;
+            font-size: 0.75rem;
+            cursor: pointer;
+            color: #3b82f6;
+            font-weight: 500;
+        }
+        footer {
+            margin-top: 24px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📦 折叠块转换器</h1>
+
+    <div class="toolbar">
+        <label class="file-label">
+            📁 上传 .md
+            <input type="file" id="fileInput" accept=".md,.txt,.markdown">
+        </label>
+        <button id="loadExample">📋 示例</button>
+        <button id="convertBtn" class="primary">✨ 转换</button>
+        <button id="copyResultBtn">📋 复制结果</button>
+        <button id="clearBtn">🗑️ 清空</button>
+    </div>
+
+    <div class="panels">
+        <div class="panel">
+            <div class="panel-header">
+                📝 Markdown 输入
+            </div>
+            <textarea id="inputArea" placeholder="在此输入或粘贴 Markdown，支持 ::::info[标题]{open} ... :::: 语法"></textarea>
+        </div>
+        <div class="panel">
+            <div class="panel-header">
+                ✅ HTML 输出
+                <button class="copy-btn" id="copyResultBtn2">复制</button>
+            </div>
+            <div class="preview" id="previewArea"></div>
+        </div>
+    </div>
+    <footer>转换后可直接复制 HTML 使用</footer>
+</div>
+
+<script>
+    // 样式定义（与 Python 版本一致）
+    const ARROW_STYLE = `<style>.arrow-fold{border-left:4px solid #3b82f6;background:#f8fafc;padding:.5em 1em;margin:1em 0;border-radius:8px}.arrow-fold summary{cursor:pointer;font-weight:600;color:#1e293b;list-style:none}.arrow-fold summary::before{content:"▶";display:inline-block;margin-right:8px;font-size:.8em;transition:transform .2s}.arrow-fold[open] summary::before{transform:rotate(90deg)}.arrow-fold summary::-webkit-details-marker{display:none}</style>`;
+
+    const TEMPLATES = {
+        info: '<details class="arrow-fold"{open}>\n<summary>{title}</summary>\n<div>\n\n{content}\n</div>\n</details>',
+        warning: '<details style="background:#eff6ff;border-left:5px solid #3b82f6;border-radius:12px;padding:0 16px 8px 16px;margin:16px 0"{open}>\n<summary style="font-weight:600;color:#1e3a8a;cursor:pointer;list-style:none;padding:12px 0 8px 0;display:flex;align-items:center;gap:8px"><span>🔵</span>{title}</summary>\n<div style="border-top:1px solid #bfdbfe;margin-top:4px;padding-top:12px;padding-bottom:8px">\n\n{content}\n</div>\n</details>',
+        success: '<details style="background:#ecfdf5;border-radius:20px;padding:0 18px 8px 18px;margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,0.05)"{open}>\n<summary style="font-weight:600;color:#065f46;cursor:pointer;list-style:none;padding:12px 0 8px 0;display:flex;align-items:center;gap:8px"><span>✅</span>{title}</summary>\n<div style="border-top:1px solid #a7f3d0;margin-top:4px;padding-top:12px">\n\n{content}\n</div>\n</details>',
+        code: '<details style="background:#0f172a;border-radius:16px;padding:0 16px 8px 16px;margin:16px 0;color:#e2e8f0"{open}>\n<summary style="font-weight:600;color:#94a3b8;cursor:pointer;list-style:none;padding:12px 0 8px 0;display:flex;align-items:center;gap:8px"><span>💻</span>{title}</summary>\n<div>\n\n{content}\n</div>\n</details>'
+    };
+
+    function convertFoldBlocks(markdownText) {
+        const lines = markdownText.split('\n');
+        const result = [];
+        let inBlock = false;
+        let blockType = '', blockTitle = '', blockOpen = false;
+        let blockContent = [];
+        const startRe = /^::::(info|warning|success|code)\[(.*?)\](?:\{([^\}]*)\})?\s*$/;
+        const endRe = /^\s*::::\s*$/;
+
+        for (let line of lines) {
+            if (!inBlock) {
+                const match = line.match(startRe);
+                if (match) {
+                    inBlock = true;
+                    blockType = match[1];
+                    blockTitle = match[2].trim();
+                    blockOpen = (match[3] === 'open');
+                    blockContent = [];
+                } else {
+                    result.push(line);
+                }
+            } else {
+                if (endRe.test(line)) {
+                    const rawContent = blockContent.join('\n');
+                    const currentType = rawContent.includes('```') ? 'code' : blockType;
+                    const openStr = blockOpen ? ' open' : '';
+                    const htmlBlock = TEMPLATES[currentType]
+                        .replace('{open}', openStr)
+                        .replace('{title}', blockTitle)
+                        .replace('{content}', rawContent);
+                    result.push('\n' + htmlBlock + '\n');
+                    inBlock = false;
+                } else {
+                    blockContent.push(line);
+                }
+            }
+        }
+        if (inBlock) {
+            const openAttr = blockOpen ? '{open}' : '';
+            result.push(`::::${blockType}[${blockTitle}]${openAttr}`);
+            result.push(...blockContent);
+        }
+        let output = result.join('\n');
+        if (output.includes('class="arrow-fold"') && !output.includes(ARROW_STYLE)) {
+            output = ARROW_STYLE + '\n\n' + output;
+        }
+        output = output.replace(/\n{3,}/g, '\n\n');
+        return output.trim() + '\n';
+    }
+
+    // DOM 元素
+    const inputArea = document.getElementById('inputArea');
+    const previewArea = document.getElementById('previewArea');
+    const convertBtn = document.getElementById('convertBtn');
+    const copyResultBtn = document.getElementById('copyResultBtn');
+    const copyResultBtn2 = document.getElementById('copyResultBtn2');
+    const clearBtn = document.getElementById('clearBtn');
+    const loadExampleBtn = document.getElementById('loadExample');
+    const fileInput = document.getElementById('fileInput');
+
+    function updatePreview() {
+        const raw = inputArea.value;
+        try {
+            const converted = convertFoldBlocks(raw);
+            previewArea.innerHTML = converted;
+        } catch(e) {
+            previewArea.innerText = '转换出错: ' + e.message;
+        }
+    }
+
+    convertBtn.addEventListener('click', updatePreview);
+    copyResultBtn.addEventListener('click', () => {
+        const converted = convertFoldBlocks(inputArea.value);
+        navigator.clipboard.writeText(converted).then(() => alert('已复制 HTML')).catch(() => alert('复制失败'));
+    });
+    copyResultBtn2.addEventListener('click', () => {
+        const converted = convertFoldBlocks(inputArea.value);
+        navigator.clipboard.writeText(converted).then(() => alert('已复制 HTML')).catch(() => alert('复制失败'));
+    });
+    clearBtn.addEventListener('click', () => {
+        inputArea.value = '';
+        previewArea.innerHTML = '';
+    });
+    loadExampleBtn.addEventListener('click', () => {
+        const example = `# 图论专题
+
+::::info[普通折叠框]
+这里放普通说明文字，支持 **Markdown** 语法。
+::::
+
+::::warning[重要警告]{open}
+默认展开的 warning 折叠框，带 🔵 图标。
+::::
+
+::::success[技巧总结]
+✅ 绿色卡片风格，适合展示成功案例。
+::::
+
+::::info[包含代码块]
+
+\`\`\`cpp
+#include <iostream>
+int main() {
+    std::cout << "Hello, fold!" << std::endl;
+    return 0;
+}
+\`\`\`
+
+::::
+
+::::code[显式代码折叠]
+\`\`\`bash
+echo "自动识别为深色代码框"
+\`\`\`
+::::
+`;
+        inputArea.value = example;
+        updatePreview();
+    });
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            inputArea.value = ev.target.result;
+            updatePreview();
+        };
+        reader.readAsText(file, 'UTF-8');
+        fileInput.value = '';
+    });
+    // 初始加载示例
+    loadExampleBtn.click();
+</script>
+</body>
+</html>
