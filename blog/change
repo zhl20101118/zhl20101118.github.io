@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>折叠块转换器</title>
+    <title>折叠块转换工具</title>
     <style>
         * {
             box-sizing: border-box;
         }
         body {
             background: #f1f5f9;
-            font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, monospace;
             margin: 0;
             padding: 24px 20px;
         }
@@ -22,12 +22,12 @@
             font-size: 1.6rem;
             font-weight: 600;
             color: #0f172a;
-            margin: 0 0 20px 0;
+            margin: 0 0 8px 0;
         }
         .toolbar {
             display: flex;
             gap: 12px;
-            margin-bottom: 20px;
+            margin: 20px 0 24px 0;
             flex-wrap: wrap;
             align-items: center;
         }
@@ -38,9 +38,9 @@
             border-radius: 40px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
             font-size: 0.85rem;
             background: #f8fafc;
+            transition: all 0.2s;
         }
         button.primary {
             background: #3b82f6;
@@ -69,7 +69,7 @@
             min-width: 300px;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -78,8 +78,9 @@
             padding: 12px 20px;
             background: #f8fafc;
             border-bottom: 1px solid #e2e8f0;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 0.9rem;
+            color: #1e293b;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -88,16 +89,15 @@
             width: 100%;
             padding: 20px;
             font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
-            font-size: 14px;
+            font-size: 13px;
             line-height: 1.5;
             border: none;
             resize: vertical;
             background: #ffffff;
             outline: none;
-            min-height: 550px;
+            min-height: 500px;
         }
         textarea {
-            font-family: monospace;
             white-space: pre-wrap;
         }
         .preview {
@@ -108,54 +108,56 @@
         .copy-btn {
             background: none;
             border: none;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             cursor: pointer;
             color: #3b82f6;
             font-weight: 500;
         }
         footer {
-            margin-top: 24px;
+            margin-top: 28px;
             text-align: center;
             color: #94a3b8;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
+        }
+        @media (max-width: 700px) {
+            .panels { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>📦 折叠块转换器</h1>
+    <h1>折叠块转换器</h1>
 
     <div class="toolbar">
         <label class="file-label">
-            📁 上传 .md
+            📄 上传 .md
             <input type="file" id="fileInput" accept=".md,.txt,.markdown">
         </label>
-        <button id="loadExample">📋 示例</button>
-        <button id="convertBtn" class="primary">✨ 转换</button>
-        <button id="copyResultBtn">📋 复制结果</button>
-        <button id="clearBtn">🗑️ 清空</button>
+        <button id="convertBtn" class="primary">转换</button>
+        <button id="copyResultBtn">复制结果</button>
+        <button id="clearBtn">清空</button>
     </div>
 
     <div class="panels">
         <div class="panel">
             <div class="panel-header">
-                📝 Markdown 输入
+                Markdown 原文
             </div>
-            <textarea id="inputArea" placeholder="在此输入或粘贴 Markdown，支持 ::::info[标题]{open} ... :::: 语法"></textarea>
+            <textarea id="inputArea" placeholder="在此输入或粘贴 Markdown 内容……"></textarea>
         </div>
         <div class="panel">
             <div class="panel-header">
-                ✅ HTML 输出
+                转换后 HTML
                 <button class="copy-btn" id="copyResultBtn2">复制</button>
             </div>
             <div class="preview" id="previewArea"></div>
         </div>
     </div>
-    <footer>转换后可直接复制 HTML 使用</footer>
+    <footer>自动识别 ::::info / warning / success / code，支持 {open} 展开，含有 ``` 的块自动使用深色代码框样式。</footer>
 </div>
 
 <script>
-    // 样式定义（与 Python 版本一致）
+    // ---------- 样式 ----------
     const ARROW_STYLE = `<style>.arrow-fold{border-left:4px solid #3b82f6;background:#f8fafc;padding:.5em 1em;margin:1em 0;border-radius:8px}.arrow-fold summary{cursor:pointer;font-weight:600;color:#1e293b;list-style:none}.arrow-fold summary::before{content:"▶";display:inline-block;margin-right:8px;font-size:.8em;transition:transform .2s}.arrow-fold[open] summary::before{transform:rotate(90deg)}.arrow-fold summary::-webkit-details-marker{display:none}</style>`;
 
     const TEMPLATES = {
@@ -171,6 +173,7 @@
         let inBlock = false;
         let blockType = '', blockTitle = '', blockOpen = false;
         let blockContent = [];
+
         const startRe = /^::::(info|warning|success|code)\[(.*?)\](?:\{([^\}]*)\})?\s*$/;
         const endRe = /^\s*::::\s*$/;
 
@@ -191,11 +194,11 @@
                     const rawContent = blockContent.join('\n');
                     const currentType = rawContent.includes('```') ? 'code' : blockType;
                     const openStr = blockOpen ? ' open' : '';
-                    const htmlBlock = TEMPLATES[currentType]
+                    const html = TEMPLATES[currentType]
                         .replace('{open}', openStr)
                         .replace('{title}', blockTitle)
                         .replace('{content}', rawContent);
-                    result.push('\n' + htmlBlock + '\n');
+                    result.push('\n' + html + '\n');
                     inBlock = false;
                 } else {
                     blockContent.push(line);
@@ -222,7 +225,6 @@
     const copyResultBtn = document.getElementById('copyResultBtn');
     const copyResultBtn2 = document.getElementById('copyResultBtn2');
     const clearBtn = document.getElementById('clearBtn');
-    const loadExampleBtn = document.getElementById('loadExample');
     const fileInput = document.getElementById('fileInput');
 
     function updatePreview() {
@@ -236,54 +238,16 @@
     }
 
     convertBtn.addEventListener('click', updatePreview);
-    copyResultBtn.addEventListener('click', () => {
-        const converted = convertFoldBlocks(inputArea.value);
-        navigator.clipboard.writeText(converted).then(() => alert('已复制 HTML')).catch(() => alert('复制失败'));
-    });
-    copyResultBtn2.addEventListener('click', () => {
-        const converted = convertFoldBlocks(inputArea.value);
-        navigator.clipboard.writeText(converted).then(() => alert('已复制 HTML')).catch(() => alert('复制失败'));
-    });
     clearBtn.addEventListener('click', () => {
         inputArea.value = '';
         previewArea.innerHTML = '';
     });
-    loadExampleBtn.addEventListener('click', () => {
-        const example = `# 图论专题
-
-::::info[普通折叠框]
-这里放普通说明文字，支持 **Markdown** 语法。
-::::
-
-::::warning[重要警告]{open}
-默认展开的 warning 折叠框，带 🔵 图标。
-::::
-
-::::success[技巧总结]
-✅ 绿色卡片风格，适合展示成功案例。
-::::
-
-::::info[包含代码块]
-
-\`\`\`cpp
-#include <iostream>
-int main() {
-    std::cout << "Hello, fold!" << std::endl;
-    return 0;
-}
-\`\`\`
-
-::::
-
-::::code[显式代码折叠]
-\`\`\`bash
-echo "自动识别为深色代码框"
-\`\`\`
-::::
-`;
-        inputArea.value = example;
-        updatePreview();
-    });
+    function copyResult() {
+        const converted = convertFoldBlocks(inputArea.value);
+        navigator.clipboard.writeText(converted).then(() => alert('已复制转换结果')).catch(() => alert('复制失败'));
+    }
+    copyResultBtn.addEventListener('click', copyResult);
+    copyResultBtn2.addEventListener('click', copyResult);
     fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -295,8 +259,7 @@ echo "自动识别为深色代码框"
         reader.readAsText(file, 'UTF-8');
         fileInput.value = '';
     });
-    // 初始加载示例
-    loadExampleBtn.click();
+    // 初始空白，无自动填充
 </script>
 </body>
 </html>
