@@ -2,391 +2,551 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>笺素 · 折叠块转换器</title>
-    <!-- 纯文字符号界面，无任何图片 / 无背景图片 只使用字符+emoji -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <!-- marked (Markdown解析) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>折叠块转换器 · 清墨版</title>
+    <!-- 引入 marked、highlight.js、KaTeX 以支持完整渲染 (不修改原转换核心) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- highlight.js 代码高亮 (深色主题，无图) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <!-- KaTeX 数学渲染 (纯公式，无图) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"></script>
     <style>
+        /* ---------- 清新原色调 + 深色/浅色模式 (跟随系统) ---------- */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        /* 浅色模式 (默认) */
+        :root {
+            --bg-body: #f4f7fc;
+            --bg-card: #ffffff;
+            --border-light: #e4edf5;
+            --text-primary: #1e2f3e;
+            --text-secondary: #4b6f8c;
+            --panel-header: #fafdff;
+            --btn-bg: #ffffff;
+            --btn-border: #d4e0ea;
+            --btn-hover: #ecf3f9;
+            --primary-bg: #3f7eac;
+            --primary-hover: #2f6086;
+            --code-bg: #f0f4f9;
+            --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --fold-border: #e1edf6;
+            --fold-summary-bg: #fafeff;
+            --details-marker: #5882a7;
+            --footer-text: #89a3b9;
+        }
+
+        /* 深色模式 (跟随系统) */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-body: #121826;
+                --bg-card: #1e2538;
+                --border-light: #2c3448;
+                --text-primary: #eef2fc;
+                --text-secondary: #9bb1cd;
+                --panel-header: #1e2638;
+                --btn-bg: #2c3448;
+                --btn-border: #3c445c;
+                --btn-hover: #3c445c;
+                --primary-bg: #5c8fc7;
+                --primary-hover: #4873a5;
+                --code-bg: #0f131f;
+                --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.3);
+                --fold-border: #2e3a4e;
+                --fold-summary-bg: #1f283e;
+                --details-marker: #7f9fc7;
+                --footer-text: #6a7f9b;
+            }
+            /* 代码高亮适配深色 (github-dark风格) */
+            .preview-area pre {
+                background: #0d1117 !important;
+            }
+            .preview-area code {
+                background: #1e2933;
+                color: #cbd5e6;
+            }
+        }
+
         body {
-            background: #f2f5f9;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            padding: 2rem 1.5rem;
-            line-height: 1.5;
+            background: var(--bg-body);
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Inter', Roboto, monospace;
+            margin: 0;
+            padding: 28px 20px;
+            transition: background 0.2s, color 0.2s;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1440px;
             margin: 0 auto;
-            background: #ffffff;
-            border-radius: 28px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.02), 0 2px 6px rgba(0,0,0,0.03);
-            overflow: hidden;
-            border: 1px solid #e9edf2;
         }
 
-        .header {
-            padding: 1.5rem 2rem 0.5rem 2rem;
-            border-bottom: 1px solid #eef2f8;
-            background: #ffffff;
-        }
-
-        .header h1 {
-            font-size: 1.7rem;
-            font-weight: 600;
-            letter-spacing: -0.3px;
-            color: #1e2f3e;
+        /* 头部区域 */
+        .header-flex {
             display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        h1 {
+            font-size: 1.65rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            letter-spacing: -0.2px;
+            display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
         }
-
-        .header h1:before {
-            content: "❖";
-            font-weight: 400;
-            color: #4f7ea3;
-            font-size: 1.6rem;
+        h1::before {
+            content: "❄️";
+            font-size: 1.5rem;
+            font-weight: normal;
         }
-
+        .theme-toggle {
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: 60px;
+            padding: 6px 16px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.2s;
+            backdrop-filter: blur(2px);
+        }
+        .theme-toggle:hover {
+            background: var(--btn-hover);
+            transform: translateY(-1px);
+        }
         .sub {
-            color: #5f7d9c;
+            color: var(--text-secondary);
             font-size: 0.85rem;
-            margin-top: 0.4rem;
-            margin-bottom: 1rem;
-            border-left: 3px solid #8bb3cf;
+            margin-top: 4px;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--primary-bg);
             padding-left: 12px;
         }
 
+        /* 工具栏 */
         .toolbar {
             display: flex;
-            flex-wrap: wrap;
             gap: 12px;
-            padding: 1rem 2rem;
-            background: #fbfdff;
-            border-bottom: 1px solid #eef2f8;
+            margin: 20px 0 28px 0;
+            flex-wrap: wrap;
             align-items: center;
         }
-
-        .btn {
-            border: 1px solid #dce5ef;
-            background: white;
-            padding: 8px 1.2rem;
+        button, .file-label {
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            padding: 8px 20px;
             border-radius: 40px;
             font-weight: 500;
-            font-size: 0.8rem;
             cursor: pointer;
-            transition: 0.2s;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            transition: all 0.2s;
             font-family: inherit;
+            backdrop-filter: blur(2px);
+        }
+        button.primary {
+            background: var(--primary-bg);
+            border-color: var(--primary-bg);
+            color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        button.primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        button:hover, .file-label:hover {
+            background: var(--btn-hover);
+            transform: translateY(-1px);
+        }
+        .file-label {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            color: #1e3a4d;
+        }
+        input[type="file"] {
+            display: none;
         }
 
-        .btn-primary {
-            background: #2c6285;
-            border-color: #2c6285;
-            color: white;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-
-        .btn-primary:hover {
-            background: #1f4b68;
-            transform: translateY(-1px);
-        }
-
-        .btn-outline:hover {
-            background: #eef3fc;
-            border-color: #bfd3e4;
-            transform: translateY(-1px);
-        }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
+        /* 双栏面板 */
         .panels {
             display: flex;
+            gap: 24px;
             flex-wrap: wrap;
         }
-
         .panel {
             flex: 1;
             min-width: 300px;
+            background: var(--bg-card);
+            border-radius: 24px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            background: #ffffff;
+            transition: background 0.2s;
+            border: 1px solid var(--border-light);
         }
-
-        .panel:first-child {
-            border-right: 1px solid #edf2f7;
-        }
-
         .panel-header {
-            padding: 1rem 1.5rem;
-            background: #fafdff;
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: #2c4c6e;
-            border-bottom: 1px solid #eef2f8;
+            padding: 14px 20px;
+            background: var(--panel-header);
+            border-bottom: 1px solid var(--border-light);
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-primary);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
         textarea {
             width: 100%;
-            padding: 1.4rem;
-            font-family: 'JetBrains Mono', 'SF Mono', monospace;
+            padding: 20px;
+            font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
             font-size: 13px;
             line-height: 1.55;
             border: none;
             resize: vertical;
-            min-height: 580px;
+            background: var(--bg-card);
+            color: var(--text-primary);
             outline: none;
-            background: #ffffff;
-            color: #1f2f3c;
+            min-height: 560px;
         }
-
-        .preview-area {
-            padding: 1.5rem;
-            background: #ffffff;
-            min-height: 580px;
-            max-height: 70vh;
+        .preview {
+            background: var(--bg-card);
+            padding: 20px;
+            min-height: 560px;
             overflow-y: auto;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             font-size: 0.95rem;
-            color: #1f2f3e;
+            line-height: 1.55;
+            color: var(--text-primary);
         }
-
-        /* 折叠块样式 —— 纯字符/无图片 */
-        .fold-block {
-            margin: 1.2rem 0;
-            border-radius: 14px;
-            background: #fafeff;
-            border: 1px solid #e2edf7;
-            overflow: hidden;
-        }
-
-        .fold-block summary {
-            font-weight: 600;
-            cursor: pointer;
-            list-style: none;
-            padding: 0.85rem 1.2rem;
-            background: #f8fbfe;
-            color: #1f5780;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            transition: background 0.15s;
-        }
-
-        .fold-block summary::-webkit-details-marker {
-            display: none;
-        }
-
-        .fold-block summary::before {
-            content: "▶";
+        .copy-btn {
+            background: none;
+            border: 1px solid var(--btn-border);
             font-size: 0.7rem;
-            transition: transform 0.2s;
-            display: inline-block;
-            color: #5882a7;
-            margin-right: 4px;
-        }
-
-        .fold-block[open] summary::before {
-            transform: rotate(90deg);
-        }
-
-        .fold-inner {
-            padding: 1rem 1.3rem;
-            background: white;
-            border-top: 1px solid #eef2f8;
-        }
-
-        /* 各类型变体 (只改左边框和背景微色差，无任何图片资源) */
-        .fold-info {
-            border-left: 4px solid #3b82f6;
-            background: #f9fcff;
-        }
-        .fold-warning {
-            border-left: 4px solid #e78c2c;
-            background: #fffaf5;
-        }
-        .fold-success {
-            border-left: 4px solid #2c9b6b;
-            background: #f6fef9;
-        }
-        .fold-code {
-            background: #0f172a;
-            border-left: 4px solid #5e7c9c;
-        }
-        .fold-code .fold-inner {
-            background: #0f172a;
-            color: #e2e8f0;
-        }
-        .fold-code summary {
-            background: #111827;
-            color: #b9d0f0;
-            border-bottom-color: #253244;
-        }
-
-        /* markdown 内部样式 */
-        .preview-area pre {
-            background: #0e1e2c;
-            border-radius: 12px;
-            padding: 1rem;
-            overflow-x: auto;
-            margin: 0.8rem 0;
-        }
-        .preview-area code {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            background: #eef3fc;
-            padding: 0.2rem 0.4rem;
-            border-radius: 6px;
-            color: #bc5a3c;
-        }
-        .preview-area pre code {
-            background: transparent;
-            color: #eef2f8;
-            padding: 0;
-        }
-        .preview-area table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 1rem 0;
-        }
-        .preview-area th, .preview-area td {
-            border: 1px solid #dee6ef;
-            padding: 6px 12px;
-        }
-        /* 字符化 toast 通知 */
-        .toast-notify {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: #1e2f3c;
-            color: white;
-            padding: 10px 24px;
-            border-radius: 60px;
-            font-size: 0.85rem;
+            cursor: pointer;
+            color: var(--primary-bg);
             font-weight: 500;
-            z-index: 1100;
-            opacity: 0;
-            transition: opacity 0.2s, transform 0.2s;
-            pointer-events: none;
-            backdrop-filter: blur(6px);
-            background: #1a2c3be6;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: monospace;
+            padding: 4px 12px;
+            border-radius: 30px;
         }
-        .toast-show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
+        .copy-btn:hover {
+            background: var(--btn-hover);
         }
         footer {
-            padding: 1rem 2rem;
+            margin-top: 32px;
             text-align: center;
+            color: var(--footer-text);
             font-size: 0.7rem;
-            color: #7c93aa;
-            border-top: 1px solid #eef2f8;
-            background: #fcfefc;
+            border-top: 1px solid var(--border-light);
+            padding-top: 20px;
+        }
+
+        /* 折叠块自定义样式 (保留原有箭头风格，同时适配深色) */
+        .arrow-fold {
+            border-left: 4px solid var(--primary-bg);
+            background: var(--fold-summary-bg);
+            padding: 0.5em 1em;
+            margin: 1.2em 0;
+            border-radius: 14px;
+            border: 1px solid var(--fold-border);
+        }
+        .arrow-fold summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-primary);
+            list-style: none;
+        }
+        .arrow-fold summary::before {
+            content: "▶";
+            display: inline-block;
+            margin-right: 10px;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+            color: var(--details-marker);
+        }
+        .arrow-fold[open] summary::before {
+            transform: rotate(90deg);
+        }
+        .arrow-fold summary::-webkit-details-marker {
+            display: none;
+        }
+        /* warning / success / code 原有样式直接继承 (会自动适配深色背景) */
+        .preview details {
+            transition: all 0.1s;
+        }
+        /* 代码块微调 */
+        .preview pre {
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+        .preview code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        /* 滚动条美观 */
+        .preview::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .preview::-webkit-scrollbar-track {
+            background: var(--border-light);
+            border-radius: 8px;
+        }
+        .preview::-webkit-scrollbar-thumb {
+            background: var(--text-secondary);
+            border-radius: 8px;
         }
         @media (max-width: 700px) {
             .panels { flex-direction: column; }
-            .panel:first-child { border-right: none; border-bottom: 1px solid #edf2f7; }
-            body { padding: 1rem; }
+            body { padding: 16px; }
         }
-        .spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            margin-right: 6px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <h1>折叠块转换器 · 纯素笺</h1>
-        <div class="sub">▸ 识别 ::::info[标题]{open} / warning / success / code  ▸ 内嵌Markdown + 代码高亮 + LaTeX 数学 ▸ 无图片，优雅符号</div>
+    <div class="header-flex">
+        <h1>折叠块转换器</h1>
+        <button id="themeSwitcher" class="theme-toggle" title="切换深浅模式">🌓 系统/手动</button>
     </div>
+    <div class="sub">自动识别 ::::info / warning / success / code，支持 {open} 展开 | 右侧实时渲染 Markdown + LaTeX + 代码高亮</div>
+
     <div class="toolbar">
-        <label class="btn btn-outline" style="cursor:pointer;">
-            📂 上传 .md
-            <input type="file" id="fileInput" accept=".md,.txt,.markdown" style="display:none;">
+        <label class="file-label">
+            📄 上传 .md
+            <input type="file" id="fileInput" accept=".md,.txt,.markdown">
         </label>
-        <button id="convertBtn" class="btn btn-primary">⟳ 转换渲染</button>
-        <button id="copyBtn" class="btn btn-outline">📋 复制HTML代码</button>
-        <button id="clearBtn" class="btn btn-outline">🗑 清空</button>
+        <button id="convertBtn" class="primary">✨ 转换 & 渲染</button>
+        <button id="copyResultBtn">📋 复制结果 (HTML)</button>
+        <button id="clearBtn">🗑️ 清空</button>
     </div>
+
     <div class="panels">
         <div class="panel">
             <div class="panel-header">
-                <span>✍️ 源文本 (折叠块语法)</span>
-                <span style="font-size:0.7rem;">::::type[标题]{open} ... ::::</span>
+                <span>✍️ Markdown 原文 (含折叠块语法)</span>
             </div>
-            <textarea id="sourceArea" placeholder="示例：
-# 文档标题
-
-::::info[📘 设计理念]{open}
-这里支持 **Markdown**，$E = mc^2$ 公式，`代码` 均可。
-```js
-console.log('折叠块内部');
-```
-::::
-
-::::warning[⚠️ 注意点]
-- 结束符 `::::` 必须独立一行
-- 公式 $$\\int x^2 dx$$
-::::
-
-普通段落亦可渲染。
-"></textarea>
+            <textarea id="inputArea" placeholder="在此输入或粘贴 Markdown 内容……&#10;&#10;示例：&#10;::::info[折叠块标题]{open}&#10;内容支持 **粗体** 和 $LaTeX$ 公式。&#10;:::;"></textarea>
         </div>
         <div class="panel">
             <div class="panel-header">
-                <span>✨ 实时预览 (折叠+数学+高亮)</span>
-                <button id="copyPreviewBtn" class="btn-outline" style="background:transparent; border:none; font-size:0.7rem;">📋 复制</button>
+                <span>✨ 实时预览 (折叠+Markdown+LaTeX)</span>
+                <button class="copy-btn" id="copyResultBtn2">复制 HTML</button>
             </div>
-            <div class="preview-area" id="previewArea">
-                <div style="color:#8aa0b5; text-align:center; padding:2rem;">点击「转换渲染」或上传文件预览效果</div>
+            <div class="preview" id="previewArea">
+                <div style="opacity:0.6; text-align:center; padding:2rem;">✨ 点击「转换 & 渲染」或上传文件预览效果</div>
             </div>
         </div>
     </div>
-    <footer>◆ 语法说明：::::info[标题]{open} 内容 ::::  支持 info/warning/success/code。 {open} 属性代表默认展开。内部支持完整 Markdown + 代码高亮 + LaTeX 数学（$行内$ 或 $$块级$$）。</footer>
+    <footer>⚡ 折叠块语法 ::::info[标题]{open} 内容 ::::  支持 info/warning/success/code。右侧自动渲染 Markdown、代码块高亮、LaTeX数学公式。</footer>
 </div>
 
 <script>
-    // ---------- 纯字符无图片 折叠块转换核心 ----------
-    // 渲染函数：将源文本中的 :::: 块解析，内部用marked渲染，外部也用marked，最终合并HTML
-    // 同时支持代码高亮、Katex (渲染后再次调用)
+    // ---------- 保留原有转换逻辑 (完全不动) ----------
+    const ARROW_STYLE = `<style>.arrow-fold{border-left:4px solid #3b82f6;background:#f8fafc;padding:.5em 1em;margin:1em 0;border-radius:8px}.arrow-fold summary{cursor:pointer;font-weight:600;color:#1e293b;list-style:none}.arrow-fold summary::before{content:"▶";display:inline-block;margin-right:8px;font-size:.8em;transition:transform .2s}.arrow-fold[open] summary::before{transform:rotate(90deg)}.arrow-fold summary::-webkit-details-marker{display:none}</style>`;
+
+    const TEMPLATES = {
+        info: '<details class="arrow-fold"{open}>\n<summary>{title}</summary>\n<div>\n\n{content}\n</div>\n</details>',
+        warning: '<details style="background:#eff6ff;border-left:5px solid #3b82f6;border-radius:12px;padding:0 16px 8px 16px;margin:16px 0"{open}>\n<summary style="font-weight:600;color:#1e3a8a;cursor:pointer;list-style:none;padding:12px 0 8px 0;display:flex;align-items:center;gap:8px"><span>🔵</span>{title}</summary>\n<div style="border-top:1px solid #bfdbfe;margin-top:4px;padding-top:12px;padding-bottom:8px">\n\n{content}\n</div>\n</details>',
+        success: '<details style="background:#ecfdf5;border-radius:20px;padding:0 18px 8px 18px;margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,0.05)"{open}>\n<summary style="font-weight:600;color:#065f46;cursor:pointer;list-style:none;padding:12px 0 8px 0;display:flex;align-items:center;gap:8px"><span>✅</span>{title}</summary>\n<div style="border-top:1px solid #a7f3d0;margin-top:4px;padding-top:12px">\n\n{content}\n</div>\n</details>',
+        code: '<details style="background:#0f172a;border-radius:16px;padding:0 16px 8px 16px;margin:16px 0;color:#e2e8f0"{open}>\n<summary style="font-weight:600;color:#94a3b8;cursor:pointer;list-style:none;padding:12px 0 8px 0;display:flex;align-items:center;gap:8px"><span>💻</span>{title}</summary>\n<div>\n\n{content}\n</div>\n</details>'
+    };
+
+    function convertFoldBlocks(markdownText) {
+        const lines = markdownText.split('\n');
+        const result = [];
+        let inBlock = false;
+        let blockType = '', blockTitle = '', blockOpen = false;
+        let blockContent = [];
+
+        const startRe = /^::::(info|warning|success|code)\[(.*?)\](?:\{([^\}]*)\})?\s*$/;
+        const endRe = /^\s*::::\s*$/;
+
+        for (let line of lines) {
+            if (!inBlock) {
+                const match = line.match(startRe);
+                if (match) {
+                    inBlock = true;
+                    blockType = match[1];
+                    blockTitle = match[2].trim();
+                    blockOpen = (match[3] === 'open');
+                    blockContent = [];
+                } else {
+                    result.push(line);
+                }
+            } else {
+                if (endRe.test(line)) {
+                    const rawContent = blockContent.join('\n');
+                    const currentType = rawContent.includes('```') ? 'code' : blockType;
+                    const openStr = blockOpen ? ' open' : '';
+                    const html = TEMPLATES[currentType]
+                        .replace('{open}', openStr)
+                        .replace('{title}', blockTitle)
+                        .replace('{content}', rawContent);
+                    result.push('\n' + html + '\n');
+                    inBlock = false;
+                } else {
+                    blockContent.push(line);
+                }
+            }
+        }
+        if (inBlock) {
+            const openAttr = blockOpen ? '{open}' : '';
+            result.push(`::::${blockType}[${blockTitle}]${openAttr}`);
+            result.push(...blockContent);
+        }
+        let output = result.join('\n');
+        if (output.includes('class="arrow-fold"') && !output.includes(ARROW_STYLE)) {
+            output = ARROW_STYLE + '\n\n' + output;
+        }
+        output = output.replace(/\n{3,}/g, '\n\n');
+        return output.trim() + '\n';
+    }
+
+    // ---------- 增强渲染：对转换后的HTML进行Markdown + LaTeX + 代码高亮二次加工 ----------
+    // 本函数不修改 convertFoldBlocks 逻辑，仅对结果做「内部内容+外部内容」的标记语言渲染
+    async function enhanceConvertedHtml(baseHtml, rawMarkdownText) {
+        // 创建一个临时容器，方便 DOM 操作
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = baseHtml;
+        
+        // 1. 处理所有 details 内部的内容容器 (折叠块内部 raw Markdown 转换成 HTML)
+        const allDetails = wrapper.querySelectorAll('details');
+        for (const detail of allDetails) {
+            // 寻找 details 内部用于展示内容的 div (兼容各个模板: 第一个非 summary 的子div)
+            let contentDiv = null;
+            for (const child of detail.children) {
+                if (child.tagName === 'DIV' && child !== detail.querySelector('summary')) {
+                    contentDiv = child;
+                    break;
+                }
+            }
+            if (contentDiv) {
+                // 获取原始markdown文本(保留内部文本, 可能包含html实体, 但未解析的markdown)
+                const rawInner = contentDiv.innerText || contentDiv.textContent;
+                if (rawInner.trim()) {
+                    try {
+                        // 使用 marked 解析内部 markdown
+                        let renderedInner = await marked.parse(rawInner);
+                        // 保持原有容器类样式不丢失 (保留容器属性)
+                        contentDiv.innerHTML = renderedInner;
+                    } catch(e) {
+                        console.warn("折叠块内部渲染失败", e);
+                        contentDiv.innerHTML = `<div style="color:#d97706;">⚠️ 内部渲染错误: ${e.message}</div>` + rawInner;
+                    }
+                }
+            }
+        }
+        
+        // 2. 处理外部普通内容 (不在任何 details 内部的文本块)
+        // 思路: 复制wrapper内所有子节点，收集不在details内的连续文本/块，合并后用marked解析，再替换
+        const fragment = document.createDocumentFragment();
+        const childrenArray = Array.from(wrapper.childNodes);
+        let nonDetailsBuffer = [];   // 存储不在details内的节点(文本或元素)
+        
+        // 辅助: 将 buffer 整体渲染成 html 并替换
+        async function flushBuffer(parent, replaceNodes) {
+            if (nonDetailsBuffer.length === 0) return;
+            // 提取缓冲区的文本内容 (合并所有文本和元素内容)
+            let combinedMarkdown = '';
+            for (const node of nonDetailsBuffer) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    combinedMarkdown += node.textContent;
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    // 如果是不在details里的其他普通元素，取其文本近似
+                    combinedMarkdown += node.innerText || node.textContent;
+                }
+            }
+            if (combinedMarkdown.trim() === '') {
+                // 保留空白节点但不需要渲染
+                for (let n of nonDetailsBuffer) {
+                    if (n.parentNode) parent.insertBefore(n.cloneNode(true), replaceNodes[0]);
+                }
+                nonDetailsBuffer = [];
+                return;
+            }
+            try {
+                const renderedHtml = await marked.parse(combinedMarkdown);
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = renderedHtml;
+                // 插入渲染后的新节点
+                for (const newNode of Array.from(tempDiv.childNodes)) {
+                    parent.insertBefore(newNode.cloneNode(true), replaceNodes[0]);
+                }
+            } catch(e) {
+                // fallback
+                for (let n of nonDetailsBuffer) {
+                    parent.insertBefore(n.cloneNode(true), replaceNodes[0]);
+                }
+            }
+            nonDetailsBuffer = [];
+        }
+        
+        // 重新组织 wrapper 内容，将非 details 的区域合并渲染
+        const newWrapper = document.createElement('div');
+        let currentBuffer = [];
+        for (const node of childrenArray) {
+            if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'DETAILS') {
+                // 遇到 details 之前，先把 buffer 渲染
+                if (currentBuffer.length) {
+                    // 将 buffer 内容整体渲染
+                    let bufferText = '';
+                    for (const bufNode of currentBuffer) {
+                        if (bufNode.nodeType === Node.TEXT_NODE) bufferText += bufNode.textContent;
+                        else bufferText += bufNode.innerText || bufNode.textContent;
+                    }
+                    if (bufferText.trim()) {
+                        const renderedHtml = await marked.parse(bufferText);
+                        const tempWrap = document.createElement('div');
+                        tempWrap.innerHTML = renderedHtml;
+                        Array.from(tempWrap.childNodes).forEach(clone => newWrapper.appendChild(clone.cloneNode(true)));
+                    } else {
+                        currentBuffer.forEach(cn => newWrapper.appendChild(cn.cloneNode(true)));
+                    }
+                    currentBuffer = [];
+                }
+                // 保留当前 details 节点 (已经内部渲染过)
+                newWrapper.appendChild(node.cloneNode(true));
+            } else {
+                currentBuffer.push(node);
+            }
+        }
+        // 处理最后的 buffer
+        if (currentBuffer.length) {
+            let bufferText = '';
+            for (const bufNode of currentBuffer) {
+                if (bufNode.nodeType === Node.TEXT_NODE) bufferText += bufNode.textContent;
+                else bufferText += bufNode.innerText || bufNode.textContent;
+            }
+            if (bufferText.trim()) {
+                const renderedHtml = await marked.parse(bufferText);
+                const tempWrap = document.createElement('div');
+                tempWrap.innerHTML = renderedHtml;
+                Array.from(tempWrap.childNodes).forEach(clone => newWrapper.appendChild(clone.cloneNode(true)));
+            } else {
+                currentBuffer.forEach(cn => newWrapper.appendChild(cn.cloneNode(true)));
+            }
+        }
+        
+        // 最终拿到全新的HTML字符串
+        let finalHtml = newWrapper.innerHTML;
+        // 如果原样式中没有箭头样式，补一个 (避免丢失)
+        if (!finalHtml.includes('.arrow-fold') && baseHtml.includes('arrow-fold')) {
+            finalHtml = `<style>.arrow-fold{border-left:4px solid var(--primary-bg);background:var(--fold-summary-bg);padding:.5em 1em;margin:1em 0;border-radius:8px}.arrow-fold summary{cursor:pointer;font-weight:600;list-style:none}.arrow-fold summary::before{content:"▶";display:inline-block;margin-right:8px;font-size:.8em;transition:transform .2s}.arrow-fold[open] summary::before{transform:rotate(90deg)}.arrow-fold summary::-webkit-details-marker{display:none}</style>` + finalHtml;
+        }
+        return finalHtml;
+    }
     
-    // 设置 marked 高亮回调
+    // ---------- 全局配置 marked 支持高亮 + 代码块 + 兼容折叠块 ----------
     if (typeof marked !== 'undefined') {
         marked.setOptions({
             highlight: function(code, lang) {
@@ -398,190 +558,48 @@ console.log('折叠块内部');
                 return hljs.highlightAuto(code).value;
             },
             breaks: true,
-            gfm: true
+            gfm: true,
+            pedantic: false
         });
     }
     
-    // 辅助: 转义正则
-    function escapeRegex(str) {
-        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
+    // 全局 DOM 元素
+    const inputArea = document.getElementById('inputArea');
+    const previewArea = document.getElementById('previewArea');
+    const convertBtn = document.getElementById('convertBtn');
+    const copyResultBtn = document.getElementById('copyResultBtn');
+    const copyResultBtn2 = document.getElementById('copyResultBtn2');
+    const clearBtn = document.getElementById('clearBtn');
+    const fileInput = document.getElementById('fileInput');
+    const themeSwitcher = document.getElementById('themeSwitcher');
     
-    // 安全html转义（仅用于标题）
-    function escapeHtmlTitle(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
+    // 保存最后生成的 原始转换结果(未增强) 用于复制? 复制按钮保留复制 convertFoldBlocks 的原始结果
+    let lastRawConverted = '';
     
-    // 主解析 + 渲染 (异步，因为marked可以异步但实际同步即可)
-    async function convertMarkdownWithBlocks(markdownText) {
-        if (!markdownText.trim()) return '<div style="color:#90a3bc; text-align:center;">◈ 暂无内容 ◈</div>';
-        
-        // 1. 提取所有折叠块 (正则：起始行，内容直至独立结束行 ::::)
-        const blockRegex = /^::::(info|warning|success|code)\[(.*?)\](?:\{([^\}]*?)\})?\s*\n([\s\S]*?)\n::::\s*$/gm;
-        let match;
-        const blocks = []; // { placeholder, type, title, openAttr, innerRaw }
-        let processed = markdownText;
-        let idx = 0;
-        const matchesList = [];
-        
-        // 收集所有匹配
-        while ((match = blockRegex.exec(markdownText)) !== null) {
-            matchesList.push({
-                full: match[0],
-                type: match[1],
-                title: match[2],
-                openRaw: match[3],
-                content: match[4],
-                index: match.index
-            });
-        }
-        // 倒序替换为占位符
-        for (let i = matchesList.length - 1; i >= 0; i--) {
-            const blk = matchesList[i];
-            const placeholder = `__FOLDBLOCK_${idx++}__`;
-            const openAttr = (blk.openRaw === 'open');
-            blocks.push({
-                id: placeholder,
-                type: blk.type,
-                title: blk.title,
-                openAttr: openAttr,
-                innerRaw: blk.content
-            });
-            // 替换第一个出现的完整块
-            const pos = processed.indexOf(blk.full);
-            if (pos !== -1) {
-                processed = processed.substring(0, pos) + placeholder + processed.substring(pos + blk.full.length);
-            } else {
-                // 备胎: 正则替换单次
-                processed = processed.replace(blk.full, placeholder);
-            }
-        }
-        
-        // 2. 渲染外部文本 (占位符保留)
-        let outerHtml = '';
-        if (processed.trim()) {
-            try {
-                outerHtml = await marked.parse(processed);
-            } catch(e) {
-                outerHtml = `<div class="error">❌ 外部解析错误: ${e.message}</div>`;
-            }
-        } else {
-            outerHtml = '';
-        }
-        
-        // 3. 分别渲染每个折叠块内部 (marked) 并生成 details 结构
-        const renderedMap = new Map();
-        for (const blk of blocks) {
-            let innerRendered = '';
-            try {
-                innerRendered = await marked.parse(blk.innerRaw);
-            } catch(e) {
-                innerRendered = `<div style="color:#b91c1c;">⚠️ 内部解析失败: ${e.message}</div>`;
-            }
-            // 确定样式类型和字符图标 (只用字符/emoji 不用图片)
-            let typeClass = '';
-            let iconChar = '📄';
-            if (blk.type === 'info') { typeClass = 'fold-info'; iconChar = 'ℹ️'; }
-            else if (blk.type === 'warning') { typeClass = 'fold-warning'; iconChar = '⚠️'; }
-            else if (blk.type === 'success') { typeClass = 'fold-success'; iconChar = '✓'; }
-            else if (blk.type === 'code') { typeClass = 'fold-code'; iconChar = '</>'; }
-            
-            const openAttrStr = blk.openAttr ? ' open' : '';
-            const safeTitle = escapeHtmlTitle(blk.title);
-            const detailsHtml = `<details class="fold-block ${typeClass}"${openAttrStr}>
-                <summary><span>${iconChar}</span> ${safeTitle}</summary>
-                <div class="fold-inner">
-                    ${innerRendered}
-                </div>
-            </details>`;
-            renderedMap.set(blk.id, detailsHtml);
-        }
-        
-        // 4. 替换占位符
-        let finalHtml = outerHtml;
-        for (const [placeholder, html] of renderedMap.entries()) {
-            const regex = new RegExp(escapeRegex(placeholder), 'g');
-            finalHtml = finalHtml.replace(regex, html);
-        }
-        // 清理残留占位符
-        finalHtml = finalHtml.replace(/__FOLDBLOCK_\d+__/g, '<span style="color:#c00;">[折叠块解析异常]</span>');
-        
-        // 添加额外基础样式 (确保内部默认样式不存在时也有)
-        if (!document.getElementById('foldBaseStyle')) {
-            const style = document.createElement('style');
-            style.id = 'foldBaseStyle';
-            style.textContent = `
-                .fold-block { margin: 1.2rem 0; border-radius: 14px; border: 1px solid #e2edf7; overflow: hidden; }
-                .fold-block summary { font-weight: 600; cursor: pointer; list-style: none; padding: 0.85rem 1.2rem; background: #f8fbfe; color: #1f5780; display: flex; align-items: center; gap: 0.6rem; }
-                .fold-block summary::-webkit-details-marker { display: none; }
-                .fold-block summary::before { content: "▶"; font-size: 0.7rem; transition: transform 0.2s; display: inline-block; color: #5882a7; margin-right: 4px; }
-                .fold-block[open] summary::before { transform: rotate(90deg); }
-                .fold-inner { padding: 1rem 1.3rem; background: white; border-top: 1px solid #eef2f8; }
-                .fold-info { border-left: 4px solid #3b82f6; background: #f9fcff; }
-                .fold-warning { border-left: 4px solid #e78c2c; background: #fffaf5; }
-                .fold-success { border-left: 4px solid #2c9b6b; background: #f6fef9; }
-                .fold-code { background: #0f172a; border-left: 4px solid #5e7c9c; }
-                .fold-code .fold-inner { background: #0f172a; color: #e2e8f0; }
-                .fold-code summary { background: #111827; color: #b9d0f0; border-bottom-color: #253244; }
-                .preview-area pre { background: #0e1e2c; border-radius: 12px; padding: 1rem; overflow-x: auto; }
-                .preview-area code:not(pre code) { background: #eef3fc; padding: 0.2rem 0.4rem; border-radius: 6px; }
-            `;
-            document.head.appendChild(style);
-        }
-        return finalHtml;
-    }
-    
-    // 显示toast (内置优雅弹窗)
-    let toastTimer = null;
-    function showMessage(msg, isError = false) {
-        let toast = document.getElementById('globalToast');
-        if (!toast) {
-            const div = document.createElement('div');
-            div.id = 'globalToast';
-            div.className = 'toast-notify';
-            document.body.appendChild(div);
-            toast = div;
-        }
-        toast.innerHTML = `${isError ? '✖' : '✓'} ${msg}`;
-        toast.style.background = isError ? '#b4342cd9' : '#1e3b4ed9';
-        toast.classList.add('toast-show');
-        if (toastTimer) clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-            toast.classList.remove('toast-show');
-        }, 2400);
-    }
-    
-    // 存储最新渲染的HTML字符串
-    let latestRenderedHTML = '';
-    
-    // 更新预览区 (异步渲染)
+    // 增强版预览更新 (保证折叠块和 Markdown 同时完美渲染)
     async function updatePreview() {
-        const source = document.getElementById('sourceArea').value;
-        const previewDiv = document.getElementById('previewArea');
-        if (!source.trim()) {
-            previewDiv.innerHTML = '<div style="color:#8aa0b5; text-align:center; padding:2rem;">📭 暂无内容，请输入 Markdown 或上传文件</div>';
-            latestRenderedHTML = '';
+        const raw = inputArea.value;
+        if (!raw.trim()) {
+            previewArea.innerHTML = '<div style="opacity:0.6; text-align:center; padding:2rem;">✨ 暂无内容，请输入 Markdown 或上传文件 ✨</div>';
+            lastRawConverted = '';
             return;
         }
-        // 显示加载指示器 (纯字符)
-        previewDiv.innerHTML = '<div style="padding:2rem; text-align:center;"><span class="spinner"></span> 渲染中 · 解析折叠块 & LaTeX</div>';
+        // 显示加载占位
+        previewArea.innerHTML = '<div style="padding:1rem; text-align:center;">⏳ 渲染中…</div>';
         try {
-            const rendered = await convertMarkdownWithBlocks(source);
-            latestRenderedHTML = rendered;
-            previewDiv.innerHTML = rendered;
-            // 代码高亮再次生效
-            previewDiv.querySelectorAll('pre code').forEach((block) => {
+            // 1. 调用原有转换逻辑得到基础的折叠块 HTML 骨架
+            const baseConverted = convertFoldBlocks(raw);
+            lastRawConverted = baseConverted; // 保留原始结果用于复制
+            // 2. 增强: 将折叠块内部的 Markdown 以及外部的 Markdown 全部渲染成 HTML
+            const enhancedHtml = await enhanceConvertedHtml(baseConverted, raw);
+            previewArea.innerHTML = enhancedHtml;
+            // 3. 代码高亮 (因为 marked 已经处理了 pre code，但动态添加的也可能需要补)
+            previewArea.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
             });
-            // 触发 KaTeX 渲染 (行内和块级)
+            // 4. LaTeX 渲染 (katex)
             if (typeof renderMathInElement !== 'undefined') {
-                renderMathInElement(previewDiv, {
+                renderMathInElement(previewArea, {
                     delimiters: [
                         {left: '$$', right: '$$', display: true},
                         {left: '$', right: '$', display: false}
@@ -589,125 +607,149 @@ console.log('折叠块内部');
                     throwOnError: false,
                     errorColor: '#b22234'
                 });
-            } else {
-                // 延迟安全
-                setTimeout(() => {
-                    if (typeof renderMathInElement !== 'undefined') {
-                        renderMathInElement(previewDiv, { delimiters: [{left: '$$', right: '$$', display: true},{left: '$', right: '$', display: false}] });
-                    }
-                }, 80);
             }
-            showMessage('渲染完成', false);
-        } catch (err) {
-            console.error(err);
-            previewDiv.innerHTML = `<div style="color:#b11; background:#ffe6e5; padding:1rem; border-radius:1rem;">⚠️ 转换出错: ${err.message}</div>`;
-            latestRenderedHTML = '';
-            showMessage('渲染失败: ' + err.message, true);
+        } catch (e) {
+            console.error(e);
+            previewArea.innerHTML = `<div style="color:#c2412c; background:#ffe9e5; padding:1rem; border-radius:12px;">❌ 转换错误: ${e.message}</div>`;
+            lastRawConverted = '';
         }
     }
     
-    // 复制当前最新渲染的完整HTML代码（折叠块结构+内嵌样式)
-    async function copyRenderedHTML() {
-        if (!latestRenderedHTML) {
-            // 尝试强制转换一下当前源
-            const src = document.getElementById('sourceArea').value;
-            if (!src.trim()) {
-                showMessage('没有可复制的内容，请先输入内容并点击转换', true);
-                return;
-            }
-            showMessage('请先点击「转换渲染」生成预览', true);
+    // 复制 (原始转换结果，与原意一致)
+    function copyConvertedResult() {
+        if (!lastRawConverted && inputArea.value.trim()) {
+            // 如果没有但输入不为空，生成一次
+            const fresh = convertFoldBlocks(inputArea.value);
+            if (fresh) lastRawConverted = fresh;
+        }
+        if (!lastRawConverted) {
+            alert('没有可复制的内容，请先输入内容并点击「转换 & 渲染」');
             return;
         }
-        // 要复制的富文本HTML (包含折叠结构和基本样式，不包含页面全局样式)
-        const fullCopy = `<!-- 折叠块转换结果 (支持details) -->\n${latestRenderedHTML}`;
-        try {
-            await navigator.clipboard.writeText(fullCopy);
-            showMessage('HTML 代码已复制到剪贴板', false);
-        } catch (err) {
-            // fallback: 传统 textarea 方式
-            const textarea = document.createElement('textarea');
-            textarea.value = fullCopy;
-            document.body.appendChild(textarea);
-            textarea.select();
-            const success = document.execCommand('copy');
-            document.body.removeChild(textarea);
-            if (success) showMessage('复制成功 (兼容模式)', false);
-            else showMessage('复制失败，请手动复制', true);
+        navigator.clipboard.writeText(lastRawConverted).then(() => {
+            // 轻提示风格（不用原生alert 模拟好看）
+            showFloatingTip('✓ 已复制转换结果 (HTML结构)');
+        }).catch(() => {
+            alert('复制失败，可手动选取');
+        });
+    }
+    
+    // 优雅的浮动提示
+    let tipTimeout = null;
+    function showFloatingTip(msg) {
+        let tip = document.getElementById('floatTip');
+        if (!tip) {
+            tip = document.createElement('div');
+            tip.id = 'floatTip';
+            tip.style.position = 'fixed';
+            tip.style.bottom = '24px';
+            tip.style.left = '50%';
+            tip.style.transform = 'translateX(-50%)';
+            tip.style.backgroundColor = 'var(--primary-bg)';
+            tip.style.color = 'white';
+            tip.style.padding = '8px 20px';
+            tip.style.borderRadius = '40px';
+            tip.style.fontSize = '0.8rem';
+            tip.style.fontWeight = '500';
+            tip.style.zIndex = '999';
+            tip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+            tip.style.backdropFilter = 'blur(8px)';
+            tip.style.pointerEvents = 'none';
+            document.body.appendChild(tip);
         }
+        tip.textContent = msg;
+        tip.style.opacity = '1';
+        clearTimeout(tipTimeout);
+        tipTimeout = setTimeout(() => {
+            tip.style.opacity = '0';
+        }, 2000);
     }
     
     // 清空
     function clearAll() {
-        document.getElementById('sourceArea').value = '';
-        document.getElementById('previewArea').innerHTML = '<div style="color:#8aa0b5; text-align:center; padding:2rem;">✨ 已清空，可粘贴或上传新文档 ✨</div>';
-        latestRenderedHTML = '';
-        showMessage('已清空编辑器', false);
+        inputArea.value = '';
+        previewArea.innerHTML = '<div style="opacity:0.6; text-align:center; padding:2rem;">✨ 内容已清空，可输入或上传文档 ✨</div>';
+        lastRawConverted = '';
+        showFloatingTip('已清空编辑器');
     }
     
-    // 文件上传
-    function handleFileUpload(file) {
+    // 主题切换 (跟随系统 / 强制亮/暗)
+    let currentThemeMode = 'system'; // system, light, dark
+    function setTheme(mode) {
+        const root = document.documentElement;
+        if (mode === 'light') {
+            // 移除prefers-color-scheme 强行亮色
+            root.style.colorScheme = 'light';
+            // 覆盖已有的媒体查询样式? 移除媒体效果? 动态添加一个覆盖class
+            document.body.classList.remove('dark-force');
+            document.body.classList.add('light-force');
+            // 但为了干净, 直接写style覆盖部分? 但媒体查询优先, 所以我们加内联覆盖
+            const styleLight = document.getElementById('forceLightStyle');
+            if (!styleLight) {
+                const s = document.createElement('style');
+                s.id = 'forceLightStyle';
+                s.textContent = `:root { --bg-body: #f4f7fc; --bg-card: #ffffff; --border-light: #e4edf5; --text-primary: #1e2f3e; --text-secondary: #4b6f8c; --panel-header: #fafdff; --btn-bg: #ffffff; --btn-border: #d4e0ea; --btn-hover: #ecf3f9; --primary-bg: #3f7eac; --fold-summary-bg: #fafeff; }`;
+                document.head.appendChild(s);
+            }
+            document.getElementById('forceLightStyle') && (document.getElementById('forceLightStyle').disabled = false);
+            const darkStyle = document.getElementById('forceDarkStyle');
+            if (darkStyle) darkStyle.disabled = true;
+        } else if (mode === 'dark') {
+            document.body.classList.remove('light-force');
+            const styleDark = document.getElementById('forceDarkStyle');
+            if (!styleDark) {
+                const s = document.createElement('style');
+                s.id = 'forceDarkStyle';
+                s.textContent = `:root { --bg-body: #121826; --bg-card: #1e2538; --border-light: #2c3448; --text-primary: #eef2fc; --text-secondary: #9bb1cd; --panel-header: #1e2638; --btn-bg: #2c3448; --btn-border: #3c445c; --btn-hover: #3c445c; --primary-bg: #5c8fc7; --fold-summary-bg: #1f283e; }`;
+                document.head.appendChild(s);
+            }
+            document.getElementById('forceDarkStyle').disabled = false;
+            const lightStyle = document.getElementById('forceLightStyle');
+            if (lightStyle) lightStyle.disabled = true;
+        } else {
+            // system: 删除强制样式
+            const darkStyle = document.getElementById('forceDarkStyle');
+            if (darkStyle) darkStyle.disabled = true;
+            const lightStyle = document.getElementById('forceLightStyle');
+            if (lightStyle) lightStyle.disabled = true;
+            document.body.classList.remove('light-force', 'dark-force');
+        }
+        currentThemeMode = mode;
+        localStorage.setItem('foldThemeMode', mode);
+    }
+    
+    function toggleTheme() {
+        if (currentThemeMode === 'system') setTheme('light');
+        else if (currentThemeMode === 'light') setTheme('dark');
+        else setTheme('system');
+    }
+    // 初始化主题
+    const savedTheme = localStorage.getItem('foldThemeMode') || 'system';
+    setTheme(savedTheme);
+    themeSwitcher.addEventListener('click', toggleTheme);
+    
+    // 绑定事件
+    convertBtn.addEventListener('click', updatePreview);
+    clearBtn.addEventListener('click', clearAll);
+    copyResultBtn.addEventListener('click', copyConvertedResult);
+    copyResultBtn2.addEventListener('click', copyConvertedResult);
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = async (e) => {
-            const content = e.target.result;
-            document.getElementById('sourceArea').value = content;
-            await updatePreview();
-            showMessage(`✓ 已加载 "${file.name}"`, false);
+        reader.onload = (ev) => {
+            inputArea.value = ev.target.result;
+            updatePreview();
+            showFloatingTip(`✓ 已加载 ${file.name}`);
         };
-        reader.onerror = () => showMessage('文件读取失败', true);
         reader.readAsText(file, 'UTF-8');
-        // 清空input value以便重复上传同文件
-        document.getElementById('fileInput').value = '';
-    }
-    
-    // 页面初始化: 绑定事件 + 默认填充示例 (干净示例)
-    function initDemo() {
-        const demo = `# ✦ 折叠块演示（纯字符界面）
-
-::::info[❖ 信息面板 — 内置LaTeX]{open}
-这里可以写 **Markdown**，支持数学公式：$\\sqrt{4} = 2$ 以及块级公式：
-
-$$\\mathcal{L} = \\frac{1}{2}\\rho v^2 S C_L$$
-
-- 列表项 A
-- 列表项 B
-
-\`\`\`python
-def greet():
-    print("代码高亮支持")
-\`\`\`
-::::
-
-::::warning[⚠️ 注意事项]
-- 结束符号 \`::::\` 必须独立成行
-- 使用 {open} 属性让折叠块默认展开
-- 支持嵌套普通 Markdown 元素
-::::
-
-::::code[💻 代码示例区]
-\`\`\`javascript
-const answer = 42;
-console.log(\`折叠块内部\`);
-\`\`\`
-::::
-
-普通段落也支持数学公式 $\\alpha + \\beta = \\gamma$。
-`;
-        document.getElementById('sourceArea').value = demo;
-        updatePreview();
-    }
-    
-    // 事件监听
-    document.getElementById('convertBtn').addEventListener('click', updatePreview);
-    document.getElementById('clearBtn').addEventListener('click', clearAll);
-    document.getElementById('copyBtn').addEventListener('click', copyRenderedHTML);
-    document.getElementById('copyPreviewBtn').addEventListener('click', copyRenderedHTML);
-    const fileInput = document.getElementById('fileInput');
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length) handleFileUpload(e.target.files[0]);
+        fileInput.value = '';
     });
-    // 初次自动加载示范（便于用户快速体验）
-    initDemo();
+    
+    // 初始完全空白 (不预置任何文本)
+    inputArea.value = '';
+    previewArea.innerHTML = '<div style="opacity:0.6; text-align:center; padding:2rem;">✨ 点击「转换 & 渲染」或上传文件预览效果</div>';
+    lastRawConverted = '';
 </script>
 </body>
 </html>
