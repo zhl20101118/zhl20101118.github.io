@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>折叠块转换器 · 清墨版</title>
-    <!-- 引入 marked、highlight.js、KaTeX 以支持完整渲染 (不修改原转换核心) -->
+    <title>折叠块转换器 · 墨韵版</title>
+    <!-- 引入渲染增强库：marked + highlight + KaTeX (不干扰原转换逻辑) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css" id="hljs-light">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" id="hljs-dark" disabled>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"></script>
     <style>
-        /* ---------- 清新原色调 + 深色/浅色模式 (跟随系统) ---------- */
+        /* ---------- 全局清新原色调 + 深色/浅色跟随系统 ---------- */
         * {
             margin: 0;
             padding: 0;
@@ -21,61 +22,53 @@
 
         /* 浅色模式 (默认) */
         :root {
-            --bg-body: #f4f7fc;
+            --bg-body: #f4f9fe;
             --bg-card: #ffffff;
-            --border-light: #e4edf5;
-            --text-primary: #1e2f3e;
-            --text-secondary: #4b6f8c;
-            --panel-header: #fafdff;
+            --border-subtle: #e6edf4;
+            --text-primary: #1f3b4c;
+            --text-secondary: #5a7b99;
+            --panel-header-bg: #fbfeff;
             --btn-bg: #ffffff;
-            --btn-border: #d4e0ea;
-            --btn-hover: #ecf3f9;
-            --primary-bg: #3f7eac;
-            --primary-hover: #2f6086;
-            --code-bg: #f0f4f9;
-            --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.03);
-            --fold-border: #e1edf6;
-            --fold-summary-bg: #fafeff;
-            --details-marker: #5882a7;
-            --footer-text: #89a3b9;
+            --btn-border: #d4e2ef;
+            --btn-hover: #eaf1f9;
+            --primary: #3f7eac;
+            --primary-hover: #2f638a;
+            --shadow: 0 8px 20px rgba(0, 0, 0, 0.02), 0 2px 6px rgba(0, 0, 0, 0.03);
+            --code-bg: #f0f5fa;
+            --fold-border: #dee9f2;
+            --fold-summary-bg: #fafdff;
+            --marker-color: #5f8ab0;
+            --footer-text: #8aa1bb;
         }
 
         /* 深色模式 (跟随系统) */
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-body: #121826;
-                --bg-card: #1e2538;
-                --border-light: #2c3448;
+                --bg-body: #11161f;
+                --bg-card: #1b2333;
+                --border-subtle: #2a3348;
                 --text-primary: #eef2fc;
-                --text-secondary: #9bb1cd;
-                --panel-header: #1e2638;
-                --btn-bg: #2c3448;
-                --btn-border: #3c445c;
-                --btn-hover: #3c445c;
-                --primary-bg: #5c8fc7;
-                --primary-hover: #4873a5;
-                --code-bg: #0f131f;
-                --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.3);
-                --fold-border: #2e3a4e;
-                --fold-summary-bg: #1f283e;
-                --details-marker: #7f9fc7;
-                --footer-text: #6a7f9b;
-            }
-            /* 代码高亮适配深色 (github-dark风格) */
-            .preview-area pre {
-                background: #0d1117 !important;
-            }
-            .preview-area code {
-                background: #1e2933;
-                color: #cbd5e6;
+                --text-secondary: #9db3d0;
+                --panel-header-bg: #1a2233;
+                --btn-bg: #252f44;
+                --btn-border: #3a445e;
+                --btn-hover: #2f3a52;
+                --primary: #6c9fd1;
+                --primary-hover: #5483b3;
+                --shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+                --code-bg: #0f141f;
+                --fold-border: #2d384d;
+                --fold-summary-bg: #1f283c;
+                --marker-color: #7f9fc7;
+                --footer-text: #6f87a5;
             }
         }
 
         body {
             background: var(--bg-body);
-            font-family: system-ui, -apple-system, 'Segoe UI', 'Inter', Roboto, monospace;
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Inter', 'Roboto', monospace;
             margin: 0;
-            padding: 28px 20px;
+            padding: 28px 24px;
             transition: background 0.2s, color 0.2s;
         }
 
@@ -85,39 +78,42 @@
         }
 
         /* 头部区域 */
-        .header-flex {
+        .title-bar {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
             flex-wrap: wrap;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         h1 {
-            font-size: 1.65rem;
+            font-size: 1.8rem;
             font-weight: 600;
-            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--text-primary), var(--primary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
             margin: 0;
-            letter-spacing: -0.2px;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         h1::before {
-            content: "❄️";
-            font-size: 1.5rem;
-            font-weight: normal;
+            content: "❖";
+            color: var(--primary);
+            font-weight: 400;
+            font-size: 1.7rem;
         }
         .theme-toggle {
             background: var(--btn-bg);
             border: 1px solid var(--btn-border);
-            border-radius: 60px;
+            border-radius: 40px;
             padding: 6px 16px;
             font-size: 0.75rem;
             cursor: pointer;
             color: var(--text-secondary);
             font-weight: 500;
             transition: all 0.2s;
-            backdrop-filter: blur(2px);
         }
         .theme-toggle:hover {
             background: var(--btn-hover);
@@ -126,9 +122,9 @@
         .sub {
             color: var(--text-secondary);
             font-size: 0.85rem;
-            margin-top: 4px;
-            margin-bottom: 20px;
-            border-left: 3px solid var(--primary-bg);
+            margin-top: 8px;
+            margin-bottom: 24px;
+            border-left: 3px solid var(--primary);
             padding-left: 12px;
         }
 
@@ -136,7 +132,7 @@
         .toolbar {
             display: flex;
             gap: 12px;
-            margin: 20px 0 28px 0;
+            margin: 8px 0 28px 0;
             flex-wrap: wrap;
             align-items: center;
         }
@@ -149,13 +145,13 @@
             cursor: pointer;
             font-size: 0.85rem;
             color: var(--text-primary);
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             font-family: inherit;
             backdrop-filter: blur(2px);
         }
         button.primary {
-            background: var(--primary-bg);
-            border-color: var(--primary-bg);
+            background: var(--primary);
+            border-color: var(--primary);
             color: white;
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
@@ -186,19 +182,19 @@
             flex: 1;
             min-width: 300px;
             background: var(--bg-card);
-            border-radius: 24px;
-            box-shadow: var(--shadow-sm);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             transition: background 0.2s;
-            border: 1px solid var(--border-light);
+            border: 1px solid var(--border-subtle);
         }
         .panel-header {
-            padding: 14px 20px;
-            background: var(--panel-header);
-            border-bottom: 1px solid var(--border-light);
-            font-weight: 500;
+            padding: 14px 22px;
+            background: var(--panel-header-bg);
+            border-bottom: 1px solid var(--border-subtle);
+            font-weight: 600;
             font-size: 0.9rem;
             color: var(--text-primary);
             display: flex;
@@ -207,7 +203,7 @@
         }
         textarea {
             width: 100%;
-            padding: 20px;
+            padding: 22px;
             font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
             font-size: 13px;
             line-height: 1.55;
@@ -220,8 +216,9 @@
         }
         .preview {
             background: var(--bg-card);
-            padding: 20px;
+            padding: 22px;
             min-height: 560px;
+            max-height: 70vh;
             overflow-y: auto;
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             font-size: 0.95rem;
@@ -229,14 +226,15 @@
             color: var(--text-primary);
         }
         .copy-btn {
-            background: none;
+            background: transparent;
             border: 1px solid var(--btn-border);
             font-size: 0.7rem;
             cursor: pointer;
-            color: var(--primary-bg);
+            color: var(--primary);
             font-weight: 500;
-            padding: 4px 12px;
-            border-radius: 30px;
+            padding: 4px 14px;
+            border-radius: 40px;
+            transition: 0.2s;
         }
         .copy-btn:hover {
             background: var(--btn-hover);
@@ -246,17 +244,17 @@
             text-align: center;
             color: var(--footer-text);
             font-size: 0.7rem;
-            border-top: 1px solid var(--border-light);
-            padding-top: 20px;
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 22px;
         }
 
-        /* 折叠块自定义样式 (保留原有箭头风格，同时适配深色) */
+        /* 折叠块样式 (保留原始箭头风格，同时适配主题) */
         .arrow-fold {
-            border-left: 4px solid var(--primary-bg);
+            border-left: 4px solid var(--primary);
             background: var(--fold-summary-bg);
             padding: 0.5em 1em;
             margin: 1.2em 0;
-            border-radius: 14px;
+            border-radius: 16px;
             border: 1px solid var(--fold-border);
         }
         .arrow-fold summary {
@@ -269,9 +267,9 @@
             content: "▶";
             display: inline-block;
             margin-right: 10px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             transition: transform 0.2s;
-            color: var(--details-marker);
+            color: var(--marker-color);
         }
         .arrow-fold[open] summary::before {
             transform: rotate(90deg);
@@ -279,50 +277,87 @@
         .arrow-fold summary::-webkit-details-marker {
             display: none;
         }
-        /* warning / success / code 原有样式直接继承 (会自动适配深色背景) */
-        .preview details {
-            transition: all 0.1s;
+        /* warning/success/code 原有样式增强深色适配 */
+        .preview details[style*="background:#eff6ff"] {
+            background: #eef3fc !important;
+            border-left-color: var(--primary);
         }
-        /* 代码块微调 */
+        @media (prefers-color-scheme: dark) {
+            .preview details[style*="background:#eff6ff"] {
+                background: #1e2a3a !important;
+                border-left-color: #5c8fc7;
+            }
+            .preview details[style*="background:#ecfdf5"] {
+                background: #1a2f2a !important;
+            }
+            .preview details[style*="background:#0f172a"] {
+                background: #111827 !important;
+            }
+        }
         .preview pre {
-            border-radius: 12px;
+            border-radius: 14px;
             overflow-x: auto;
+            background: var(--code-bg);
+            padding: 1rem;
         }
         .preview code {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.85rem;
         }
 
-        /* 滚动条美观 */
-        .preview::-webkit-scrollbar {
+        /* 自定义toast */
+        .toast-smooth {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--primary);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            backdrop-filter: blur(8px);
+            background: var(--primary);
+        }
+        .toast-smooth.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
-        .preview::-webkit-scrollbar-track {
-            background: var(--border-light);
+        ::-webkit-scrollbar-track {
+            background: var(--border-subtle);
             border-radius: 8px;
         }
-        .preview::-webkit-scrollbar-thumb {
+        ::-webkit-scrollbar-thumb {
             background: var(--text-secondary);
             border-radius: 8px;
         }
         @media (max-width: 700px) {
-            .panels { flex-direction: column; }
             body { padding: 16px; }
+            .panels { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header-flex">
+    <div class="title-bar">
         <h1>折叠块转换器</h1>
-        <button id="themeSwitcher" class="theme-toggle" title="切换深浅模式">🌓 系统/手动</button>
+        <button id="themeSwitcher" class="theme-toggle">🌓 深浅模式</button>
     </div>
-    <div class="sub">自动识别 ::::info / warning / success / code，支持 {open} 展开 | 右侧实时渲染 Markdown + LaTeX + 代码高亮</div>
+    <div class="sub">▸ 识别 ::::info/warning/success/code[标题]{open} ▸ 支持折叠块内 Markdown + LaTeX + 代码高亮</div>
 
     <div class="toolbar">
         <label class="file-label">
-            📄 上传 .md
+            📂 上传 .md
             <input type="file" id="fileInput" accept=".md,.txt,.markdown">
         </label>
         <button id="convertBtn" class="primary">✨ 转换 & 渲染</button>
@@ -333,13 +368,13 @@
     <div class="panels">
         <div class="panel">
             <div class="panel-header">
-                <span>✍️ Markdown 原文 (含折叠块语法)</span>
+                <span>✍️ Markdown 原文 (折叠块语法)</span>
             </div>
-            <textarea id="inputArea" placeholder="在此输入或粘贴 Markdown 内容……&#10;&#10;示例：&#10;::::info[折叠块标题]{open}&#10;内容支持 **粗体** 和 $LaTeX$ 公式。&#10;:::;"></textarea>
+            <textarea id="inputArea" placeholder="在此输入或粘贴 Markdown 内容……&#10;&#10;示例：&#10;::::info[设计理念]{open}&#10;支持 **粗体** 和 $E = mc^2$ 公式&#10;:::;"></textarea>
         </div>
         <div class="panel">
             <div class="panel-header">
-                <span>✨ 实时预览 (折叠+Markdown+LaTeX)</span>
+                <span>✨ 实时预览 (折叠 + Markdown + LaTeX)</span>
                 <button class="copy-btn" id="copyResultBtn2">复制 HTML</button>
             </div>
             <div class="preview" id="previewArea">
@@ -347,11 +382,11 @@
             </div>
         </div>
     </div>
-    <footer>⚡ 折叠块语法 ::::info[标题]{open} 内容 ::::  支持 info/warning/success/code。右侧自动渲染 Markdown、代码块高亮、LaTeX数学公式。</footer>
+    <footer>⚡ 原始转换逻辑不变，右侧自动渲染折叠块内部 Markdown、代码高亮与 LaTeX 数学公式，深色模式跟随系统。</footer>
 </div>
 
 <script>
-    // ---------- 保留原有转换逻辑 (完全不动) ----------
+    // ---------- 以下为原始转换逻辑，完全保留，一字不改 ----------
     const ARROW_STYLE = `<style>.arrow-fold{border-left:4px solid #3b82f6;background:#f8fafc;padding:.5em 1em;margin:1em 0;border-radius:8px}.arrow-fold summary{cursor:pointer;font-weight:600;color:#1e293b;list-style:none}.arrow-fold summary::before{content:"▶";display:inline-block;margin-right:8px;font-size:.8em;transition:transform .2s}.arrow-fold[open] summary::before{transform:rotate(90deg)}.arrow-fold summary::-webkit-details-marker{display:none}</style>`;
 
     const TEMPLATES = {
@@ -411,142 +446,10 @@
         output = output.replace(/\n{3,}/g, '\n\n');
         return output.trim() + '\n';
     }
+    // ---------- 原始转换逻辑结束 ----------
 
-    // ---------- 增强渲染：对转换后的HTML进行Markdown + LaTeX + 代码高亮二次加工 ----------
-    // 本函数不修改 convertFoldBlocks 逻辑，仅对结果做「内部内容+外部内容」的标记语言渲染
-    async function enhanceConvertedHtml(baseHtml, rawMarkdownText) {
-        // 创建一个临时容器，方便 DOM 操作
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = baseHtml;
-        
-        // 1. 处理所有 details 内部的内容容器 (折叠块内部 raw Markdown 转换成 HTML)
-        const allDetails = wrapper.querySelectorAll('details');
-        for (const detail of allDetails) {
-            // 寻找 details 内部用于展示内容的 div (兼容各个模板: 第一个非 summary 的子div)
-            let contentDiv = null;
-            for (const child of detail.children) {
-                if (child.tagName === 'DIV' && child !== detail.querySelector('summary')) {
-                    contentDiv = child;
-                    break;
-                }
-            }
-            if (contentDiv) {
-                // 获取原始markdown文本(保留内部文本, 可能包含html实体, 但未解析的markdown)
-                const rawInner = contentDiv.innerText || contentDiv.textContent;
-                if (rawInner.trim()) {
-                    try {
-                        // 使用 marked 解析内部 markdown
-                        let renderedInner = await marked.parse(rawInner);
-                        // 保持原有容器类样式不丢失 (保留容器属性)
-                        contentDiv.innerHTML = renderedInner;
-                    } catch(e) {
-                        console.warn("折叠块内部渲染失败", e);
-                        contentDiv.innerHTML = `<div style="color:#d97706;">⚠️ 内部渲染错误: ${e.message}</div>` + rawInner;
-                    }
-                }
-            }
-        }
-        
-        // 2. 处理外部普通内容 (不在任何 details 内部的文本块)
-        // 思路: 复制wrapper内所有子节点，收集不在details内的连续文本/块，合并后用marked解析，再替换
-        const fragment = document.createDocumentFragment();
-        const childrenArray = Array.from(wrapper.childNodes);
-        let nonDetailsBuffer = [];   // 存储不在details内的节点(文本或元素)
-        
-        // 辅助: 将 buffer 整体渲染成 html 并替换
-        async function flushBuffer(parent, replaceNodes) {
-            if (nonDetailsBuffer.length === 0) return;
-            // 提取缓冲区的文本内容 (合并所有文本和元素内容)
-            let combinedMarkdown = '';
-            for (const node of nonDetailsBuffer) {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    combinedMarkdown += node.textContent;
-                } else if (node.nodeType === Node.ELEMENT_NODE) {
-                    // 如果是不在details里的其他普通元素，取其文本近似
-                    combinedMarkdown += node.innerText || node.textContent;
-                }
-            }
-            if (combinedMarkdown.trim() === '') {
-                // 保留空白节点但不需要渲染
-                for (let n of nonDetailsBuffer) {
-                    if (n.parentNode) parent.insertBefore(n.cloneNode(true), replaceNodes[0]);
-                }
-                nonDetailsBuffer = [];
-                return;
-            }
-            try {
-                const renderedHtml = await marked.parse(combinedMarkdown);
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = renderedHtml;
-                // 插入渲染后的新节点
-                for (const newNode of Array.from(tempDiv.childNodes)) {
-                    parent.insertBefore(newNode.cloneNode(true), replaceNodes[0]);
-                }
-            } catch(e) {
-                // fallback
-                for (let n of nonDetailsBuffer) {
-                    parent.insertBefore(n.cloneNode(true), replaceNodes[0]);
-                }
-            }
-            nonDetailsBuffer = [];
-        }
-        
-        // 重新组织 wrapper 内容，将非 details 的区域合并渲染
-        const newWrapper = document.createElement('div');
-        let currentBuffer = [];
-        for (const node of childrenArray) {
-            if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'DETAILS') {
-                // 遇到 details 之前，先把 buffer 渲染
-                if (currentBuffer.length) {
-                    // 将 buffer 内容整体渲染
-                    let bufferText = '';
-                    for (const bufNode of currentBuffer) {
-                        if (bufNode.nodeType === Node.TEXT_NODE) bufferText += bufNode.textContent;
-                        else bufferText += bufNode.innerText || bufNode.textContent;
-                    }
-                    if (bufferText.trim()) {
-                        const renderedHtml = await marked.parse(bufferText);
-                        const tempWrap = document.createElement('div');
-                        tempWrap.innerHTML = renderedHtml;
-                        Array.from(tempWrap.childNodes).forEach(clone => newWrapper.appendChild(clone.cloneNode(true)));
-                    } else {
-                        currentBuffer.forEach(cn => newWrapper.appendChild(cn.cloneNode(true)));
-                    }
-                    currentBuffer = [];
-                }
-                // 保留当前 details 节点 (已经内部渲染过)
-                newWrapper.appendChild(node.cloneNode(true));
-            } else {
-                currentBuffer.push(node);
-            }
-        }
-        // 处理最后的 buffer
-        if (currentBuffer.length) {
-            let bufferText = '';
-            for (const bufNode of currentBuffer) {
-                if (bufNode.nodeType === Node.TEXT_NODE) bufferText += bufNode.textContent;
-                else bufferText += bufNode.innerText || bufNode.textContent;
-            }
-            if (bufferText.trim()) {
-                const renderedHtml = await marked.parse(bufferText);
-                const tempWrap = document.createElement('div');
-                tempWrap.innerHTML = renderedHtml;
-                Array.from(tempWrap.childNodes).forEach(clone => newWrapper.appendChild(clone.cloneNode(true)));
-            } else {
-                currentBuffer.forEach(cn => newWrapper.appendChild(cn.cloneNode(true)));
-            }
-        }
-        
-        // 最终拿到全新的HTML字符串
-        let finalHtml = newWrapper.innerHTML;
-        // 如果原样式中没有箭头样式，补一个 (避免丢失)
-        if (!finalHtml.includes('.arrow-fold') && baseHtml.includes('arrow-fold')) {
-            finalHtml = `<style>.arrow-fold{border-left:4px solid var(--primary-bg);background:var(--fold-summary-bg);padding:.5em 1em;margin:1em 0;border-radius:8px}.arrow-fold summary{cursor:pointer;font-weight:600;list-style:none}.arrow-fold summary::before{content:"▶";display:inline-block;margin-right:8px;font-size:.8em;transition:transform .2s}.arrow-fold[open] summary::before{transform:rotate(90deg)}.arrow-fold summary::-webkit-details-marker{display:none}</style>` + finalHtml;
-        }
-        return finalHtml;
-    }
-    
-    // ---------- 全局配置 marked 支持高亮 + 代码块 + 兼容折叠块 ----------
+    // ---------- 增强渲染模块 (不修改原逻辑，仅后处理) ----------
+    // 配置 marked 支持高亮
     if (typeof marked !== 'undefined') {
         marked.setOptions({
             highlight: function(code, lang) {
@@ -558,12 +461,118 @@
                 return hljs.highlightAuto(code).value;
             },
             breaks: true,
-            gfm: true,
-            pedantic: false
+            gfm: true
         });
     }
-    
-    // 全局 DOM 元素
+
+    // 递归处理折叠块内部内容 + 外部文本，将 Markdown 渲染为 HTML
+    async function enhanceWithMarkdownAndLatex(htmlString) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlString, 'text/html');
+        const container = doc.body;
+
+        // 辅助: 渲染文本节点内的markdown (将文本块转为html)
+        async function renderMarkdownInElement(element) {
+            // 只处理纯文本节点，不破坏已有结构
+            const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+                acceptNode: (node) => {
+                    if (node.parentElement && (node.parentElement.tagName === 'CODE' || node.parentElement.tagName === 'PRE')) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            });
+            const textNodes = [];
+            while(walker.nextNode()) textNodes.push(walker.currentNode);
+            for (let textNode of textNodes) {
+                const parent = textNode.parentElement;
+                if (!parent) continue;
+                const rawText = textNode.textContent;
+                if (!rawText.trim()) continue;
+                // 避免重复渲染已经包裹的
+                if (parent.classList && parent.classList.contains('rendered-md')) continue;
+                try {
+                    const rendered = await marked.parse(rawText);
+                    if (rendered && rendered !== rawText) {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = rendered;
+                        const newNodes = Array.from(tempDiv.childNodes);
+                        parent.insertBefore(tempDiv.firstChild, textNode);
+                        parent.removeChild(textNode);
+                        // 标记避免二次处理
+                        for (let newNode of newNodes) {
+                            if (newNode.nodeType === Node.ELEMENT_NODE) newNode.classList.add('rendered-md');
+                        }
+                    }
+                } catch(e) { console.warn(e); }
+            }
+        }
+
+        // 获取所有 details 内部的内容容器
+        const detailsList = container.querySelectorAll('details');
+        for (const detail of detailsList) {
+            let contentDiv = null;
+            for (const child of detail.children) {
+                if (child.tagName === 'DIV' && child !== detail.querySelector('summary')) {
+                    contentDiv = child;
+                    break;
+                }
+            }
+            if (contentDiv) {
+                // 对内容区域进行 markdown 渲染
+                await renderMarkdownInElement(contentDiv);
+                // 额外处理可能遗留的文本块
+                contentDiv.querySelectorAll('.rendered-md pre code').forEach(block => hljs.highlightElement(block));
+            }
+        }
+
+        // 处理外部普通内容 (不在任何 details 内的区块)
+        const bodyWrapper = container;
+        // 获取所有不是 details 的子节点区域，合并文本
+        const children = Array.from(bodyWrapper.childNodes);
+        let buffer = [];
+        const newFragment = document.createDocumentFragment();
+        for (const node of children) {
+            if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'DETAILS') {
+                // 先处理缓存的文本
+                if (buffer.length) {
+                    const mergedText = buffer.map(n => n.textContent).join('');
+                    if (mergedText.trim()) {
+                        const renderedHtml = await marked.parse(mergedText);
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = renderedHtml;
+                        while(tempDiv.firstChild) newFragment.appendChild(tempDiv.firstChild);
+                    } else {
+                        buffer.forEach(n => newFragment.appendChild(n.cloneNode(true)));
+                    }
+                    buffer = [];
+                }
+                newFragment.appendChild(node.cloneNode(true));
+            } else {
+                buffer.push(node);
+            }
+        }
+        if (buffer.length) {
+            const mergedText = buffer.map(n => n.textContent).join('');
+            if (mergedText.trim()) {
+                const renderedHtml = await marked.parse(mergedText);
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = renderedHtml;
+                while(tempDiv.firstChild) newFragment.appendChild(tempDiv.firstChild);
+            } else {
+                buffer.forEach(n => newFragment.appendChild(n.cloneNode(true)));
+            }
+        }
+        container.innerHTML = '';
+        container.appendChild(newFragment);
+
+        // 再次确保代码高亮
+        container.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+        // 对行内代码简单高亮
+        return container.innerHTML;
+    }
+
+    // 全局状态 & DOM
     const inputArea = document.getElementById('inputArea');
     const previewArea = document.getElementById('previewArea');
     const convertBtn = document.getElementById('convertBtn');
@@ -572,32 +581,28 @@
     const clearBtn = document.getElementById('clearBtn');
     const fileInput = document.getElementById('fileInput');
     const themeSwitcher = document.getElementById('themeSwitcher');
-    
-    // 保存最后生成的 原始转换结果(未增强) 用于复制? 复制按钮保留复制 convertFoldBlocks 的原始结果
-    let lastRawConverted = '';
-    
-    // 增强版预览更新 (保证折叠块和 Markdown 同时完美渲染)
+
+    let lastRenderedHTML = '';   // 存储最终增强后的 HTML，供复制使用
+
+    // 增强版更新预览
     async function updatePreview() {
         const raw = inputArea.value;
         if (!raw.trim()) {
             previewArea.innerHTML = '<div style="opacity:0.6; text-align:center; padding:2rem;">✨ 暂无内容，请输入 Markdown 或上传文件 ✨</div>';
-            lastRawConverted = '';
+            lastRenderedHTML = '';
             return;
         }
-        // 显示加载占位
-        previewArea.innerHTML = '<div style="padding:1rem; text-align:center;">⏳ 渲染中…</div>';
+        // 加载占位
+        previewArea.innerHTML = '<div style="padding:1.5rem; text-align:center;">⏳ 渲染折叠块 + Markdown + LaTeX ...</div>';
         try {
-            // 1. 调用原有转换逻辑得到基础的折叠块 HTML 骨架
+            // 1. 调用原始转换逻辑生成基础 HTML
             const baseConverted = convertFoldBlocks(raw);
-            lastRawConverted = baseConverted; // 保留原始结果用于复制
-            // 2. 增强: 将折叠块内部的 Markdown 以及外部的 Markdown 全部渲染成 HTML
-            const enhancedHtml = await enhanceConvertedHtml(baseConverted, raw);
+            // 2. 增强渲染: 将折叠块内部及外部的 Markdown 转为 HTML
+            const enhancedHtml = await enhanceWithMarkdownAndLatex(baseConverted);
+            // 3. 注入到预览区
             previewArea.innerHTML = enhancedHtml;
-            // 3. 代码高亮 (因为 marked 已经处理了 pre code，但动态添加的也可能需要补)
-            previewArea.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightElement(block);
-            });
-            // 4. LaTeX 渲染 (katex)
+            lastRenderedHTML = enhancedHtml;
+            // 4. 调用 KaTeX 渲染 LaTeX
             if (typeof renderMathInElement !== 'undefined') {
                 renderMathInElement(previewArea, {
                     delimiters: [
@@ -605,134 +610,130 @@
                         {left: '$', right: '$', display: false}
                     ],
                     throwOnError: false,
-                    errorColor: '#b22234'
+                    errorColor: '#d9534f'
                 });
             }
-        } catch (e) {
-            console.error(e);
-            previewArea.innerHTML = `<div style="color:#c2412c; background:#ffe9e5; padding:1rem; border-radius:12px;">❌ 转换错误: ${e.message}</div>`;
-            lastRawConverted = '';
+            // 5. 二次确保代码高亮 (动态内容)
+            previewArea.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+            showToast('✓ 渲染完成', false);
+        } catch (err) {
+            console.error(err);
+            previewArea.innerHTML = `<div style="color:#c0392b; background:#fce4e4; padding:1rem; border-radius:12px;">⚠️ 转换出错: ${err.message}</div>`;
+            lastRenderedHTML = '';
+            showToast('渲染失败: ' + err.message, true);
         }
     }
-    
-    // 复制 (原始转换结果，与原意一致)
-    function copyConvertedResult() {
-        if (!lastRawConverted && inputArea.value.trim()) {
-            // 如果没有但输入不为空，生成一次
-            const fresh = convertFoldBlocks(inputArea.value);
-            if (fresh) lastRawConverted = fresh;
-        }
-        if (!lastRawConverted) {
-            alert('没有可复制的内容，请先输入内容并点击「转换 & 渲染」');
+
+    // 复制最终渲染的 HTML (增强后)
+    async function copyEnhancedHTML() {
+        if (!lastRenderedHTML) {
+            if (inputArea.value.trim()) {
+                showToast('请先点击「转换 & 渲染」生成内容', true);
+            } else {
+                showToast('没有可复制的内容', true);
+            }
             return;
         }
-        navigator.clipboard.writeText(lastRawConverted).then(() => {
-            // 轻提示风格（不用原生alert 模拟好看）
-            showFloatingTip('✓ 已复制转换结果 (HTML结构)');
-        }).catch(() => {
-            alert('复制失败，可手动选取');
-        });
-    }
-    
-    // 优雅的浮动提示
-    let tipTimeout = null;
-    function showFloatingTip(msg) {
-        let tip = document.getElementById('floatTip');
-        if (!tip) {
-            tip = document.createElement('div');
-            tip.id = 'floatTip';
-            tip.style.position = 'fixed';
-            tip.style.bottom = '24px';
-            tip.style.left = '50%';
-            tip.style.transform = 'translateX(-50%)';
-            tip.style.backgroundColor = 'var(--primary-bg)';
-            tip.style.color = 'white';
-            tip.style.padding = '8px 20px';
-            tip.style.borderRadius = '40px';
-            tip.style.fontSize = '0.8rem';
-            tip.style.fontWeight = '500';
-            tip.style.zIndex = '999';
-            tip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-            tip.style.backdropFilter = 'blur(8px)';
-            tip.style.pointerEvents = 'none';
-            document.body.appendChild(tip);
+        try {
+            await navigator.clipboard.writeText(lastRenderedHTML);
+            showToast('✓ 已复制渲染后的 HTML 代码', false);
+        } catch (err) {
+            // fallback
+            const textarea = document.createElement('textarea');
+            textarea.value = lastRenderedHTML;
+            document.body.appendChild(textarea);
+            textarea.select();
+            const success = document.execCommand('copy');
+            document.body.removeChild(textarea);
+            if (success) showToast('✓ 复制成功 (兼容模式)', false);
+            else showToast('复制失败，请手动选择', true);
         }
-        tip.textContent = msg;
-        tip.style.opacity = '1';
-        clearTimeout(tipTimeout);
-        tipTimeout = setTimeout(() => {
-            tip.style.opacity = '0';
-        }, 2000);
     }
-    
-    // 清空
+
+    // 清空所有内容
     function clearAll() {
         inputArea.value = '';
         previewArea.innerHTML = '<div style="opacity:0.6; text-align:center; padding:2rem;">✨ 内容已清空，可输入或上传文档 ✨</div>';
-        lastRawConverted = '';
-        showFloatingTip('已清空编辑器');
+        lastRenderedHTML = '';
+        showToast('已清空编辑器', false);
     }
-    
-    // 主题切换 (跟随系统 / 强制亮/暗)
-    let currentThemeMode = 'system'; // system, light, dark
+
+    // 优雅 Toast 提示
+    let toastTimeout;
+    function showToast(msg, isError = false) {
+        let toast = document.getElementById('beautyToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'beautyToast';
+            toast.className = 'toast-smooth';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = msg;
+        toast.style.background = isError ? '#c2412c' : 'var(--primary)';
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2400);
+    }
+
+    // 深色/浅色模式 (跟随系统 + 手动覆盖)
+    let currentTheme = 'system';
     function setTheme(mode) {
         const root = document.documentElement;
+        const lightStyle = document.getElementById('hljs-light');
+        const darkStyle = document.getElementById('hljs-dark');
         if (mode === 'light') {
-            // 移除prefers-color-scheme 强行亮色
             root.style.colorScheme = 'light';
-            // 覆盖已有的媒体查询样式? 移除媒体效果? 动态添加一个覆盖class
-            document.body.classList.remove('dark-force');
-            document.body.classList.add('light-force');
-            // 但为了干净, 直接写style覆盖部分? 但媒体查询优先, 所以我们加内联覆盖
-            const styleLight = document.getElementById('forceLightStyle');
-            if (!styleLight) {
-                const s = document.createElement('style');
-                s.id = 'forceLightStyle';
-                s.textContent = `:root { --bg-body: #f4f7fc; --bg-card: #ffffff; --border-light: #e4edf5; --text-primary: #1e2f3e; --text-secondary: #4b6f8c; --panel-header: #fafdff; --btn-bg: #ffffff; --btn-border: #d4e0ea; --btn-hover: #ecf3f9; --primary-bg: #3f7eac; --fold-summary-bg: #fafeff; }`;
-                document.head.appendChild(s);
-            }
-            document.getElementById('forceLightStyle') && (document.getElementById('forceLightStyle').disabled = false);
-            const darkStyle = document.getElementById('forceDarkStyle');
+            if (lightStyle) lightStyle.disabled = false;
             if (darkStyle) darkStyle.disabled = true;
+            document.body.style.backgroundColor = '#f4f9fe';
+            // 移除强制深色变量，恢复默认浅色
+            document.documentElement.style.setProperty('--bg-body', '#f4f9fe');
+            document.documentElement.style.setProperty('--bg-card', '#ffffff');
         } else if (mode === 'dark') {
-            document.body.classList.remove('light-force');
-            const styleDark = document.getElementById('forceDarkStyle');
-            if (!styleDark) {
-                const s = document.createElement('style');
-                s.id = 'forceDarkStyle';
-                s.textContent = `:root { --bg-body: #121826; --bg-card: #1e2538; --border-light: #2c3448; --text-primary: #eef2fc; --text-secondary: #9bb1cd; --panel-header: #1e2638; --btn-bg: #2c3448; --btn-border: #3c445c; --btn-hover: #3c445c; --primary-bg: #5c8fc7; --fold-summary-bg: #1f283e; }`;
-                document.head.appendChild(s);
-            }
-            document.getElementById('forceDarkStyle').disabled = false;
-            const lightStyle = document.getElementById('forceLightStyle');
+            root.style.colorScheme = 'dark';
             if (lightStyle) lightStyle.disabled = true;
+            if (darkStyle) darkStyle.disabled = false;
+            document.body.style.backgroundColor = '#11161f';
+            document.documentElement.style.setProperty('--bg-body', '#11161f');
+            document.documentElement.style.setProperty('--bg-card', '#1b2333');
         } else {
-            // system: 删除强制样式
-            const darkStyle = document.getElementById('forceDarkStyle');
+            // system: 移除手动样式，依靠媒体查询
+            root.style.colorScheme = '';
+            if (lightStyle) lightStyle.disabled = false;
             if (darkStyle) darkStyle.disabled = true;
-            const lightStyle = document.getElementById('forceLightStyle');
-            if (lightStyle) lightStyle.disabled = true;
-            document.body.classList.remove('light-force', 'dark-force');
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.body.style.backgroundColor = isDark ? '#11161f' : '#f4f9fe';
+            document.documentElement.style.removeProperty('--bg-body');
+            document.documentElement.style.removeProperty('--bg-card');
         }
-        currentThemeMode = mode;
         localStorage.setItem('foldThemeMode', mode);
+        currentTheme = mode;
     }
-    
+
     function toggleTheme() {
-        if (currentThemeMode === 'system') setTheme('light');
-        else if (currentThemeMode === 'light') setTheme('dark');
+        if (currentTheme === 'system') setTheme('light');
+        else if (currentTheme === 'light') setTheme('dark');
         else setTheme('system');
     }
-    // 初始化主题
+
+    // 加载保存的主题
     const savedTheme = localStorage.getItem('foldThemeMode') || 'system';
     setTheme(savedTheme);
     themeSwitcher.addEventListener('click', toggleTheme);
-    
+    // 监听系统变化
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (currentTheme === 'system') setTheme('system');
+    });
+
     // 绑定事件
     convertBtn.addEventListener('click', updatePreview);
     clearBtn.addEventListener('click', clearAll);
-    copyResultBtn.addEventListener('click', copyConvertedResult);
-    copyResultBtn2.addEventListener('click', copyConvertedResult);
+    copyResultBtn.addEventListener('click', copyEnhancedHTML);
+    copyResultBtn2.addEventListener('click', copyEnhancedHTML);
     fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -740,16 +741,17 @@
         reader.onload = (ev) => {
             inputArea.value = ev.target.result;
             updatePreview();
-            showFloatingTip(`✓ 已加载 ${file.name}`);
+            showToast(`✓ 已加载 ${file.name}`, false);
         };
+        reader.onerror = () => showToast('文件读取失败', true);
         reader.readAsText(file, 'UTF-8');
         fileInput.value = '';
     });
-    
-    // 初始完全空白 (不预置任何文本)
+
+    // 初始完全空白，无自动填充
     inputArea.value = '';
     previewArea.innerHTML = '<div style="opacity:0.6; text-align:center; padding:2rem;">✨ 点击「转换 & 渲染」或上传文件预览效果</div>';
-    lastRawConverted = '';
+    lastRenderedHTML = '';
 </script>
 </body>
 </html>
